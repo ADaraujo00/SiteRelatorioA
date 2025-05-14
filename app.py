@@ -83,7 +83,7 @@ for j in range(1, len(col_labels_sieve)):
     retained_2mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_2_mm_(g)_{min_med_max}", 0) or 0)
     retained_4mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_4_mm_(g)_{min_med_max}", 0) or 0)
 
-    # Supondo que Carrots mass é o Mt para ambas as peneiras (simplificação)
+    # Usando Carrots mass como Mt para ambas as peneiras
     if carrots_mass > 0:
         performance_2mm[min_med_max] = 1 - (retained_2mm / carrots_mass) if carrots_mass > 0 else 0
         performance_4mm[min_med_max] = 1 - (retained_4mm / carrots_mass) if carrots_mass > 0 else 0
@@ -314,7 +314,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
 
-    cell_perf_4mm_label = sieve_table.cell(len(row_labels_sieve_input) + 1, 0)
+    cell_perf_4mm_label = sieve_table.cell(len(row_labels_sieve_input) + 2, 0)
     cell_perf_4mm_label.text = "Performance 4 mm"
     for paragraph in cell_perf_4mm_label.paragraphs:
         paragraph.style.font.name = 'Arial'
@@ -323,7 +323,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
     for j in range(1, len(col_labels_sieve)):
         min_med_max = col_labels_sieve[j].lower()
         value = perf_4mm.get(min_med_max, 0)
-        cell_perf_4mm_value = sieve_table.cell(len(row_labels_sieve_input) + 1, j)
+        cell_perf_4mm_value = sieve_table.cell(len(row_labels_sieve_input) + 2, j)
         cell_perf_4mm_value.text = f"{value:.2%}"
         for paragraph in cell_perf_4mm_value.paragraphs:
             paragraph.style.font.name = 'Arial'
