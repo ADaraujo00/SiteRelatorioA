@@ -53,6 +53,15 @@ for question in questions:
 def generate_word_report(general_data, images, sample_data):
     doc = Document()
 
+    def remove_table_borders(table):
+        tblPr = table._element.xpath('./w:tblPr')[0]
+        borders = docx.oxml.shared.OxmlElement('w:tblBorders')
+        for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+            border = docx.oxml.shared.OxmlElement(f'w:{tag}')
+            border.set(docx.oxml.ns.qn('w:val'), 'nil')
+            borders.append(border)
+        tblPr.append(borders)
+
     # Informações Gerais em duas linhas (como no site)
     table_row1 = doc.add_table(rows=1, cols=4)
     cells_row1 = table_row1.rows[0].cells
@@ -60,14 +69,7 @@ def generate_word_report(general_data, images, sample_data):
     cells_row1[1].text = f"Project: {general_data['Project']}"
     cells_row1[2].text = f"Lot: {general_data['Lot']}"
     cells_row1[3].text = f"Released: {general_data['Released']}"
-    # Remover bordas da tabela 1
-    tblPr1 = table_row1._tbl.get_or_add_tblPr()
-    borders1 = docx.oxml.shared.OxmlElement('w:tblBorders')
-    for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
-        border = docx.oxml.shared.OxmlElement(f'w:{tag}')
-        border.set(docx.oxml.ns.qn('w:val'), 'nil')
-        borders1.append(border)
-    tblPr1.append(borders1)
+    remove_table_borders(table_row1)
 
     table_row2 = doc.add_table(rows=1, cols=4)
     cells_row2 = table_row2.rows[0].cells
@@ -75,14 +77,7 @@ def generate_word_report(general_data, images, sample_data):
     cells_row2[1].text = f"Performed by: {general_data['Performed by']}"
     cells_row2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
     cells_row2[3].text = f"Approved by: {general_data['Approved by']}"
-    # Remover bordas da tabela 2
-    tblPr2 = table_row2._tbl.get_or_add_tblPr()
-    borders2 = docx.oxml.shared.OxmlElement('w:tblBorders')
-    for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
-        border = docx.oxml.shared.OxmlElement(f'w:{tag}')
-        border.set(docx.oxml.ns.qn('w:val'), 'nil')
-        borders2.append(borders2)
-    tblPr2.append(borders2)
+    remove_table_borders(table_row2)
 
     doc.add_paragraph() # Espaço antes da próxima seção
 
