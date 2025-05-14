@@ -4,12 +4,17 @@ from io import BytesIO
 
 OUTPUT_FILENAME = 'relatorio_gerado.docx'
 
-def generate_word_report(qa_pairs):
+def generate_word_report(data):
     doc = Document()
-    for question, answer in qa_pairs.items():
-        doc.add_paragraph(f"**Pergunta:** {question}")
-        doc.add_paragraph(f"**Resposta:** {answer}")
-        doc.add_paragraph() # Adiciona um espaço entre os pares
+    doc.add_paragraph(f"**Product:** {data['Product']}")
+    doc.add_paragraph(f"**Project:** {data['Project']}")
+    doc.add_paragraph(f"**Lot:** {data['Lot']}")
+    doc.add_paragraph(f"**Released:** {data['Released']}")
+    doc.add_paragraph()
+    doc.add_paragraph(f"**Requested by:** {data['Requested by']}")
+    doc.add_paragraph(f"**Performed by:** {data['Performed by']}")
+    doc.add_paragraph(f"**Reviewed by:** {data['Reviewed by']}")
+    doc.add_paragraph(f"**Approved by:** {data['Approved by']}")
 
     # Salvar o documento na memória
     buffer = BytesIO()
@@ -17,22 +22,33 @@ def generate_word_report(qa_pairs):
     buffer.seek(0)
     return buffer
 
-st.title("Gerador de Relatório Word Dinâmico")
+st.title("Gerador de Relatório Word")
 
-st.subheader("Insira as Perguntas e Respostas:")
+st.subheader("Preencha as informações:")
 
-qa_pairs = {}
-num_qa_pairs = st.number_input("Número de Perguntas/Respostas:", min_value=1, step=1, value=1)
+product = st.text_input("Product:")
+project = st.text_input("Project:")
+lot = st.text_input("Lot:")
+released = st.text_input("Released:")
+requested_by = st.text_input("Requested by:")
+performed_by = st.text_input("Performed by:")
+reviewed_by = st.text_input("Reviewed by:")
+approved_by = st.text_input("Approved by:")
 
-for i in range(num_qa_pairs):
-    question = st.text_input(f"Pergunta {i+1}:")
-    answer = st.text_area(f"Resposta para a Pergunta {i+1}:")
-    if question:
-        qa_pairs[question] = answer
+report_data = {
+    "Product": product,
+    "Project": project,
+    "Lot": lot,
+    "Released": released,
+    "Requested by": requested_by,
+    "Performed by": performed_by,
+    "Reviewed by": reviewed_by,
+    "Approved by": approved_by
+}
 
 if st.button("Gerar Relatório Word"):
-    if qa_pairs:
-        word_buffer = generate_word_report(qa_pairs)
+    if all(report_data.values()):
+        word_buffer = generate_word_report(report_data)
         if word_buffer:
             st.download_button(
                 label="Baixar Relatório",
@@ -41,12 +57,11 @@ if st.button("Gerar Relatório Word"):
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
     else:
-        st.warning("Por favor, insira pelo menos uma Pergunta e Resposta.")
+        st.warning("Por favor, preencha todos os campos.")
 
 st.markdown("""
 ---
 **Instruções:**
-1. Insira o número de pares de Pergunta/Resposta que você deseja adicionar.
-2. Preencha os campos de cada Pergunta e sua respectiva Resposta.
-3. Clique em "Gerar Relatório Word" para baixar o documento.
+1. Preencha todos os campos solicitados.
+2. Clique em "Gerar Relatório Word" para baixar o documento.
 """)
