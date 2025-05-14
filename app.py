@@ -36,7 +36,7 @@ cols_grid = [st.columns(4) for _ in range(3)]
 for i in range(3):
     for j in range(4):
         index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"])
+        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
         image_uploaders.append(uploader)
 
 st.subheader("Detalhes das Amostras:")
@@ -69,16 +69,17 @@ def generate_word_report(general_data, images, sample_data):
     for i in range(0, len(images), 4):
         row = doc.add_paragraph()
         for j in range(4):
-            if i + j < len(images) and images[i + j] is not None:
+            index = i * 4 + j
+            if index < len(images) and images[index] is not None:
                 try:
-                    img = Image.open(images[i + j])
+                    img = Image.open(images[index])
                     width, height = img.size
                     ratio = height / width
                     new_width = 2.5
                     new_height = new_width * ratio
-                    row.add_run().add_picture(images[i + j], width=Inches(new_width), height=Inches(new_height))
+                    row.add_run().add_picture(images[index], width=Inches(new_width), height=Inches(new_height))
                 except Exception as e:
-                    doc.add_paragraph(f"Erro ao adicionar imagem {i+j+1}: {e}")
+                    doc.add_paragraph(f"Erro ao adicionar imagem {index + 1}: {e}")
             row.add_run("   ")
         doc.add_paragraph()
 
