@@ -4,7 +4,7 @@ from docx.shared import Inches
 from io import BytesIO
 from PIL import Image
 
-OUTPUT_FILENAME = 'relatorio_com_tabela.docx'
+OUTPUT_FILENAME = 'relatorio_com_tabela_e_imagens.docx'
 
 st.title("Gerador de Relatório com Tabela e Imagens")
 
