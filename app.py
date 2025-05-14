@@ -6,6 +6,8 @@ from io import BytesIO
 from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
 from docx2pdf import convert
+import tempfile
+import os
 
 OUTPUT_FILENAME_DOCX = 'relatorio_completo.docx'
 OUTPUT_FILENAME_PDF = 'relatorio_completo.pdf'
@@ -182,15 +184,24 @@ if st.button("Gerar Relatório"):
         )
         # Converter para PDF e oferecer download
         try:
-            pdf_buffer = BytesIO()
-            convert(word_buffer, pdf_buffer)
-            pdf_buffer.seek(0)
-            st.download_button(
-                label="Baixar Relatório PDF",
-                data=pdf_buffer.getvalue(),
-                file_name=OUTPUT_FILENAME_PDF,
-                mime="application/pdf"
-            )
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_file:
+                tmp_file.write(word_buffer.getvalue())
+                temp_docx_path = tmp_file.name
+
+            convert(temp_docx_path, OUTPUT_FILENAME_PDF)
+
+            with open(OUTPUT_FILENAME_PDF, "rb") as pdf_file:
+                st.download_button(
+                    label="Baixar Relatório PDF",
+                    data=pdf_file.read(),
+                    file_name=OUTPUT_FILENAME_PDF,
+                    mime="application/pdf"
+                )
+
+            os.remove(temp_docx_path)
+            if os.path.exists(OUTPUT_FILENAME_PDF):
+                os.remove(OUTPUT_FILENAME_PDF)
+
         except Exception as e:
             st.error(f"Erro ao converter para PDF: {e}")
 
