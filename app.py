@@ -24,16 +24,20 @@ approved_by = col8.text_input("Approved by:")
 
 st.subheader("3. SAMPLES DESCRIPTION:")
 
-# Layout da grade de imagens (3x4)
+image_labels = [
+    "Foto base frente", "Foto base costas", "Foto base cima", "Foto base baixo",
+    "Produto inteiro frente com jarra blender", "Produto inteiro lado com jarra blender",
+    "Produto inteiro costas com jarra blender", "Produto inteiro lado com jarra blender",
+    "Jarra lado", "Jarra frente", "Jarra cima", "Jarra embaixo"
+]
+
 image_uploaders = []
+cols_grid = [st.columns(4) for _ in range(3)]
 for i in range(3):
-    cols = st.columns(4)
-    row_uploaders = []
     for j in range(4):
         index = i * 4 + j
-        uploader = cols[j].file_uploader(f"Imagem {index + 1}:", type=["jpg", "jpeg", "png"])
-        row_uploaders.append(uploader)
-    image_uploaders.extend(row_uploaders)
+        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"])
+        image_uploaders.append(uploader)
 
 st.subheader("Detalhes das Amostras:")
 sample_details_input = {}
@@ -119,7 +123,7 @@ st.markdown("""
 ---
 **Instruções:**
 1. Preencha as informações gerais.
-2. Carregue até 12 imagens na grade.
+2. Carregue as imagens correspondentes a cada descrição.
 3. Preencha os detalhes das amostras.
 4. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
