@@ -14,21 +14,21 @@ HEADER_IMAGE_PATH = 'electrolux_header.png'
 
 st.title("Gerador de Relatório Completo")
 
-report_number = st.text_input("**Número do Relatório:**", "TR00001")
+report_number = st.text_input("Número do Relatório:", "TR00001")
 
 st.subheader("Informações Gerais:")
 
 col1, col2, col3, col4 = st.columns(4)
-product_general = col1.text_input("**Product:**")
-project = col2.text_input("**Project:**")
-lot = col3.text_input("**Lot:**")
-released = col4.text_input("**Released:**")
+product_general = col1.text_input("Product:")
+project = col2.text_input("Project:")
+lot = col3.text_input("Lot:")
+released = col4.text_input("Released:")
 
 col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("**Requested by:**")
-performed_by = col6.text_input("**Performed by:**")
-reviewed_by = col7.text_input("**Reviewed by:**")
-approved_by = col8.text_input("**Approved by:**")
+requested_by = col5.text_input("Requested by:")
+performed_by = col6.text_input("Performed by:")
+reviewed_by = col7.text_input("Reviewed by:")
+approved_by = col8.text_input("Approved by:")
 
 st.subheader("3. SAMPLES DESCRIPTION:")
 
@@ -45,7 +45,7 @@ for i in range(3):
     for j in range(4):
         index = i * 4 + j
         uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=[
-                                                                            "jpg", "jpeg", "png"], key=f"image_{index}")
+                                                 "jpg", "jpeg", "png"], key=f"image_{index}")
         image_uploaders.append(uploader)
 
 st.subheader("Detalhes das Amostras:")
@@ -89,13 +89,9 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_row1 = doc.add_table(rows=2, cols=4)
     cells_row1 = table_row1.rows[0].cells
     cells_row1[0].text = "Product:"
-    cells_row1[0].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[1].text = "Project:"
-    cells_row1[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[2].text = "Lot:"
-    cells_row1[2].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[3].text = "Released:"
-    cells_row1[3].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row2 = table_row1.rows[1].cells
     cells_row2[0].text = general_data['Product']
     cells_row2[1].text = general_data['Project']
@@ -106,13 +102,9 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_row2 = doc.add_table(rows=2, cols=4)
     cells_row3 = table_row2.rows[0].cells
     cells_row3[0].text = "Requested by:"
-    cells_row3[0].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[1].text = "Performed by:"
-    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[2].text = "Reviewed by:"
-    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[3].text = "Approved by:"
-    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row4 = table_row2.rows[1].cells
     cells_row4[0].text = general_data['Requested by']
     cells_row4[1].text = general_data['Performed by']
@@ -182,9 +174,9 @@ if st.button("Gerar Relatório"):
 st.markdown("""
 ---
 **Instruções:**
-1. Insira o **Número do Relatório**.
-2. Preencha as **Informações Gerais**.
+1. Insira o número do relatório.
+2. Preencha as informações gerais.
 3. Carregue as imagens correspondentes a cada descrição.
-4. Preencha os **Detalhes das Amostras**.
+4. Preencha os detalhes das amostras.
 5. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
