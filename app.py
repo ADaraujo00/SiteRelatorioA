@@ -4,7 +4,7 @@ from docx.shared import Inches
 from io import BytesIO
 from PIL import Image
 
-OUTPUT_FILENAME = 'relatorio_com_tabela_e_imagens.docx'
+OUTPUT_FILENAME = 'relatorio_com_tabela_alternativa.docx'
 
 st.title("Gerador de Relatório com Tabela e Imagens")
 
@@ -14,7 +14,9 @@ sample_details_input = {}
 questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
 
 for question in questions:
-    sample_details_input[question] = st.text_input(f"{question}:")
+    col1, col2 = st.columns([1, 2])
+    col1.markdown(f"**{question}:**")
+    sample_details_input[question] = col2.text_input("", label_visibility="collapsed", key=question)
 
 st.subheader("Carregar Imagens:")
 uploaded_images = st.file_uploader("Selecione as imagens:", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
