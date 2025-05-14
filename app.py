@@ -154,7 +154,8 @@ def generate_word_report(report_num, general_data, images, sample_data):
         cell_left = table_samples.cell(i, 0)
         cell_left.text = f"{key}:"
         cell_left.paragraphs[0].runs[0].font.bold = True
-        cell_right.text = value
+        # Correção: Usar o valor do dicionário sample_data
+        cell_right.text = sample_data[key]
 
     # Salvar o documento na memória
     buffer = BytesIO()
