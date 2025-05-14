@@ -2,52 +2,29 @@ import streamlit as st
 from docx import Document
 from docx.shared import Inches
 from io import BytesIO
-from PIL import Image
 
-OUTPUT_FILENAME = 'relatorio_com_tabela_alternativa.docx'
+OUTPUT_FILENAME = 'relatorio_gerado.docx'
+BODY_IMAGE_PATH = 'imagem_inicial.png'  # Nome do arquivo da imagem a ser inserida no corpo
 
-st.title("Gerador de Relatório com Tabela e Imagens")
-
-st.subheader("Detalhes das Amostras:")
-
-sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
-
-for question in questions:
-    col1, col2 = st.columns([1, 2])
-    col1.markdown(f"**{question}:**")
-    sample_details_input[question] = col2.text_input("", label_visibility="collapsed", key=question)
-
-st.subheader("Carregar Imagens:")
-uploaded_images = st.file_uploader("Selecione as imagens:", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
-
-def generate_word_report(details, images):
+def generate_word_report(data):
     doc = Document()
 
-    doc.add_paragraph("Detalhes das Amostras:")
-    table = doc.add_table(rows=len(details), cols=2)
-    for i, (key, value) in enumerate(details.items()):
-        cell_left = table.cell(i, 0)
-        cell_right = table.cell(i, 1)
-        cell_left.text = f"{key}:"
-        cell_left.paragraphs[0].runs[0].font.bold = True
-        cell_right.text = value
+    # Adicionar imagem no COMEÇO do corpo
+    try:
+        doc.add_picture(BODY_IMAGE_PATH, width=Inches(4.0)) # Ajuste a largura conforme necessário
+        doc.add_paragraph() # Adiciona uma linha em branco após a imagem
+    except FileNotFoundError:
+        st.warning(f"Arquivo de imagem '{BODY_IMAGE_PATH}' não encontrado.")
 
-    doc.add_paragraph("\nImagens:")
-    if images:
-        for img_file in images:
-            try:
-                img = Image.open(img_file)
-                width, height = img.size
-                ratio = height / width
-                new_width = 4  # Polegadas (ajuste conforme necessário)
-                new_height = new_width * ratio
-                doc.add_picture(img_file, width=Inches(new_width), height=Inches(new_height))
-                doc.add_paragraph() # Adiciona um espaço após cada imagem
-            except Exception as e:
-                doc.add_paragraph(f"Erro ao adicionar imagem: {e}")
-    else:
-        doc.add_paragraph("Nenhuma imagem carregada.")
+    doc.add_paragraph(f"**Product:** {data['Product']}")
+    doc.add_paragraph(f"**Project:** {data['Project']}")
+    doc.add_paragraph(f"**Lot:** {data['Lot']}")
+    doc.add_paragraph(f"**Released:** {data['Released']}")
+    doc.add_paragraph()
+    doc.add_paragraph(f"**Requested by:** {data['Requested by']}")
+    doc.add_paragraph(f"**Performed by:** {data['Performed by']}")
+    doc.add_paragraph(f"**Reviewed by:** {data['Reviewed by']}")
+    doc.add_paragraph(f"**Approved by:** {data['Approved by']}")
 
     # Salvar o documento na memória
     buffer = BytesIO()
@@ -55,23 +32,70 @@ def generate_word_report(details, images):
     buffer.seek(0)
     return buffer
 
+st.title("Gerador de Relatório Word")
+
+st.subheader("Preencha as informações:")
+
+col1, col2, col3, col4 = st.columns(4)
+product = col1.text_input("Product:")
+project = col2.text_input("Project:")
+lot = col3.text_input("Lot:")
+released = col4.text_input("Released:")
+
+col5, col6, col7, col8 = st.columns(4)
+requested_by = col5.text_input("Requested by:")
+performed_by = col6.text_input("Performed by:")
+reviewed_by = col7.text_input("Reviewed by:")
+approved_by = col8.text_input("Approved by:")
+
+report_data = {
+    "Product": product,
+    "Project": project,
+    "Lot": lot,
+    "Released": released,
+    "Requested by": requested_by,
+    "Performed by": performed_by,
+    "Reviewed by": reviewed_by,
+    "Approved by": approved_by
+}
+
 if st.button("Gerar Relatório Word"):
-    if all(sample_details_input.values()):
-        word_buffer = generate_word_report(sample_details_input, uploaded_images)
-        if word_buffer:
-            st.download_button(
-                label="Baixar Relatório Word",
-                data=word_buffer.getvalue(),
-                file_name=OUTPUT_FILENAME,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
+    if all(report_data.values()):
+        # Gerar relatório com perguntas em negrito
+        doc = Document()
+        try:
+            doc.add_picture(BODY_IMAGE_PATH, width=Inches(4.0))
+            doc.add_paragraph()
+        except FileNotFoundError:
+            st.warning(f"Arquivo de imagem '{BODY_IMAGE_PATH}' não encontrado.")
+
+        doc.add_paragraph(f"**Product:** {report_data['Product']}")
+        doc.add_paragraph(f"**Project:** {report_data['Project']}")
+        doc.add_paragraph(f"**Lot:** {report_data['Lot']}")
+        doc.add_paragraph(f"**Released:** {report_data['Released']}")
+        doc.add_paragraph()
+        doc.add_paragraph(f"**Requested by:** {report_data['Requested by']}")
+        doc.add_paragraph(f"**Performed by:** {report_data['Performed by']}")
+        doc.add_paragraph(f"**Reviewed by:** {report_data['Reviewed by']}")
+        doc.add_paragraph(f"**Approved by:** {report_data['Approved by']}")
+
+        buffer = BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+
+        st.download_button(
+            label="Baixar Relatório",
+            data=buffer.getvalue(),
+            file_name=OUTPUT_FILENAME,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
     else:
-        st.warning("Por favor, preencha todos os detalhes das amostras.")
+        st.warning("Por favor, preencha todos os campos.")
 
 st.markdown("""
 ---
 **Instruções:**
-1. Preencha os detalhes das amostras nos campos ao lado de cada pergunta.
-2. Carregue as imagens desejadas.
-3. Clique em "Gerar Relatório Word" para baixar o documento com a tabela de detalhes e as imagens.
+1. Preencha todos os campos solicitados. Os primeiros quatro campos aparecerão na primeira linha e os quatro seguintes na segunda.
+2. Certifique-se de que o arquivo de imagem `imagem_inicial.png` esteja no mesmo diretório deste script.
+3. Clique em "Gerar Relatório Word" para baixar o documento com a imagem no início e as perguntas em negrito.
 """)
