@@ -7,6 +7,8 @@ from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
 
 OUTPUT_FILENAME = 'relatorio_completo.docx'
+IMAGE_SIZE_CM = 4
+IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
 
 st.title("Gerador de Relatório Completo")
 
@@ -93,25 +95,22 @@ def generate_word_report(general_data, images, sample_data):
 
     doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
-    # Adicionar as imagens em layout de grade (3x4)
-    for i in range(0, len(images), 4):
-        row = doc.add_paragraph()
+    # Adicionar as imagens em tabela 3x4 com tamanho fixo
+    image_table = doc.add_table(rows=3, cols=4)
+    for i in range(3):
         for j in range(4):
             index = i * 4 + j
+            cell = image_table.cell(i, j)
             if index < len(images) and images[index] is not None:
                 try:
-                    img = Image.open(images[index])
-                    width, height = img.size
-                    ratio = height / width
-                    new_width = 2.5
-                    new_height = new_width * ratio
-                    row.add_run().add_picture(images[index], width=Inches(new_width), height=Inches(new_height))
+                    cell.paragraphs[0].add_run().add_picture(
+                        images[index],
+                        width=Inches(IMAGE_SIZE_INCHES),
+                        height=Inches(IMAGE_SIZE_INCHES)
+                    )
                 except Exception as e:
-                    doc.add_paragraph(f"Erro ao adicionar imagem {index + 1}: {e}")
-            row.add_run("   ")
-        doc.add_paragraph()
+                    cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
 
-    # Adicionar a tabela com os detalhes das amostras
     doc.add_paragraph("\nDetalhes das Amostras:")
     table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
