@@ -53,33 +53,24 @@ for question in questions:
 def generate_word_report(general_data, images, sample_data):
     doc = Document()
 
-    def remove_table_borders(table):
-        tblPr = table._element.xpath('./w:tblPr')[0]
-        borders = docx.oxml.shared.OxmlElement('w:tblBorders')
-        for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
-            border = docx.oxml.shared.OxmlElement(f'w:{tag}')
-            border.set(docx.oxml.ns.qn('w:val'), 'nil')
-            borders.append(border)
-        tblPr.append(borders)
-
-    # Informações Gerais em duas linhas (como no site)
-    table_row1 = doc.add_table(rows=1, cols=4)
-    cells_row1 = table_row1.rows[0].cells
-    cells_row1[0].text = f"Product: {general_data['Product']}"
-    cells_row1[1].text = f"Project: {general_data['Project']}"
-    cells_row1[2].text = f"Lot: {general_data['Lot']}"
-    cells_row1[3].text = f"Released: {general_data['Released']}"
-    remove_table_borders(table_row1)
-
-    table_row2 = doc.add_table(rows=1, cols=4)
-    cells_row2 = table_row2.rows[0].cells
-    cells_row2[0].text = f"Requested by: {general_data['Requested by']}"
-    cells_row2[1].text = f"Performed by: {general_data['Performed by']}"
-    cells_row2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
-    cells_row2[3].text = f"Approved by: {general_data['Approved by']}"
-    remove_table_borders(table_row2)
-
-    doc.add_paragraph() # Espaço antes da próxima seção
+    doc.add_paragraph("Informações Gerais:")
+    doc.add_paragraph(f"**Product:** {general_data['Product']}")
+    doc.add_paragraph(general_data['Product'])
+    doc.add_paragraph(f"**Project:** {general_data['Project']}")
+    doc.add_paragraph(general_data['Project'])
+    doc.add_paragraph(f"**Lot:** {general_data['Lot']}")
+    doc.add_paragraph(general_data['Lot'])
+    doc.add_paragraph(f"**Released:** {general_data['Released']}")
+    doc.add_paragraph(general_data['Released'])
+    doc.add_paragraph(f"**Requested by:** {general_data['Requested by']}")
+    doc.add_paragraph(general_data['Requested by'])
+    doc.add_paragraph(f"**Performed by:** {general_data['Performed by']}")
+    doc.add_paragraph(general_data['Performed by'])
+    doc.add_paragraph(f"**Reviewed by:** {general_data['Reviewed by']}")
+    doc.add_paragraph(general_data['Reviewed by'])
+    doc.add_paragraph(f"**Approved by:** {general_data['Approved by']}")
+    doc.add_paragraph(general_data['Approved by'])
+    doc.add_paragraph()
 
     doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
