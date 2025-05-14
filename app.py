@@ -30,6 +30,32 @@ performed_by = col6.text_input("**Performed by:**")
 reviewed_by = col7.text_input("**Reviewed by:**")
 approved_by = col8.text_input("**Approved by:**")
 
+st.subheader("3. SAMPLES DESCRIPTION:")
+
+image_labels = [
+    "Foto base frente", "Foto base costas", "Foto base cima", "Foto base baixo",
+    "Produto inteiro frente com jarra blender", "Produto inteiro lado com jarra blender",
+    "Produto inteiro costas com jarra blender", "Produto inteiro lado com jarra blender",
+    "Jarra lado", "Jarra frente", "Jarra cima", "Jarra embaixo"
+]
+
+image_uploaders = []
+cols_grid = [st.columns(4) for _ in range(3)]
+for i in range(3):
+    for j in range(4):
+        index = i * 4 + j
+        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
+        image_uploaders.append(uploader)
+
+st.subheader("Detalhes das Amostras:")
+sample_details_input = {}
+questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
+
+for question in questions:
+    col_q, col_a = st.columns([1, 2])
+    col_q.markdown(f"**{question}:**")
+    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
+
 st.subheader("Análise da Peneira:")
 
 col_labels_sieve = ["", "Minimum", "Medium", "Maximum"]
@@ -88,33 +114,6 @@ col_label1.markdown("**Picture 2 mm**")
 col_photo2, col_label2 = st.columns([1, 3])
 photo_4mm = col_photo2.file_uploader("Foto Peneira 4 mm:", type=["jpg", "jpeg", "png"], key="photo_4mm")
 col_label2.markdown("**Picture 4 mm**")
-
-st.subheader("3. SAMPLES DESCRIPTION:")
-
-image_labels = [
-    "Foto base frente", "Foto base costas", "Foto base cima", "Foto base baixo",
-    "Produto inteiro frente com jarra blender", "Produto inteiro lado com jarra blender",
-    "Produto inteiro costas com jarra blender", "Produto inteiro lado com jarra blender",
-    "Jarra lado", "Jarra frente", "Jarra cima", "Jarra embaixo"
-]
-
-image_uploaders = []
-cols_grid = [st.columns(4) for _ in range(3)]
-for i in range(3):
-    for j in range(4):
-        index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
-        image_uploaders.append(uploader)
-
-st.subheader("Detalhes das Amostras:")
-sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
-
-for question in questions:
-    col_q, col_a = st.columns([1, 2])
-    col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
-
 
 def generate_word_report(report_num, general_data, images, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
     doc = Document()
@@ -208,8 +207,70 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
 
     doc.add_paragraph()  # Espaço antes da próxima seção
 
+    doc.add_paragraph("5. SAMPLES DESCRIPTION:")
+    paragraph = doc.paragraphs[-1]
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
+
+    # Adicionar as imagens em tabela 3x4 com tamanho fixo
+    image_table = doc.add_table(rows=3, cols=4)
+    for i in range(3):
+        for j in range(4):
+            index = i * 4 + j
+            cell = image_table.cell(i, j)
+            if index < len(images) and images[index] is not None:
+                try:
+                    cell.paragraphs[0].add_run().add_picture(
+                        images[index],
+                        width=Inches(IMAGE_SIZE_INCHES),
+                        height=Inches(IMAGE_SIZE_INCHES)
+                    )
+                except Exception as e:
+                    cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
+                    for paragraph in cell.paragraphs:
+                        paragraph.style.font.name = 'Arial'
+                        paragraph.style.font.size = Pt(10)
+                        for run in paragraph.runs:
+                            run.font.name = 'Arial'
+                            run.font.size = Pt(10)
+            if index < len(image_labels):
+                cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
+                paragraph = cell.paragraphs[-1]
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(8)
+
+    doc.add_paragraph("\n6. DETALHES DAS AMOSTRAS:")
+    paragraph = doc.paragraphs[-1]
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
+    table_samples = doc.add_table(rows=len(sample_data), cols=2)
+    for i, (key, value) in enumerate(sample_data.items()):
+        cell_left = table_samples.cell(i, 0)
+        cell_right = table_samples.cell(i, 1)
+        for paragraph in cell_left.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            for run in paragraph.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(10)
+                run.font.bold = True
+        cell_left.text = f"{key}:"
+        for paragraph in cell_right.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            for run in paragraph.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(10)
+        cell_right.text = value
+
     # Adicionar a seção de análise da peneira
-    doc.add_paragraph("4. ANÁLISE DA PENEIRA:")
+    doc.add_paragraph("\n7. ANÁLISE DA PENEIRA:")
+    paragraph = doc.paragraphs[-1]
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
     sieve_table = doc.add_table(rows=len(row_labels_sieve_input) + 2, cols=len(col_labels_sieve))
     # Cabeçalho
     for i, label in enumerate(col_labels_sieve):
@@ -271,66 +332,8 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
     remove_table_borders(sieve_table)
     doc.add_paragraph()
 
-    doc.add_paragraph("5. SAMPLES DESCRIPTION:")
-    paragraph = doc.paragraphs[-1]
-    paragraph.style.font.name = 'Arial'
-    paragraph.style.font.size = Pt(10)
-    paragraph.runs[0].font.bold = True
-
-    # Adicionar as imagens em tabela 3x4 com tamanho fixo
-    image_table = doc.add_table(rows=3, cols=4)
-    for i in range(3):
-        for j in range(4):
-            index = i * 4 + j
-            cell = image_table.cell(i, j)
-            if index < len(images) and images[index] is not None:
-                try:
-                    cell.paragraphs[0].add_run().add_picture(
-                        images[index],
-                        width=Inches(IMAGE_SIZE_INCHES),
-                        height=Inches(IMAGE_SIZE_INCHES)
-                    )
-                except Exception as e:
-                    cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
-                    for paragraph in cell.paragraphs:
-                        paragraph.style.font.name = 'Arial'
-                        paragraph.style.font.size = Pt(10)
-                        for run in paragraph.runs:
-                            run.font.name = 'Arial'
-                            run.font.size = Pt(10)
-            if index < len(image_labels):
-                cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
-                paragraph = cell.paragraphs[-1]
-                paragraph.style.font.name = 'Arial'
-                paragraph.style.font.size = Pt(8)
-
-    doc.add_paragraph("\n6. DETALHES DAS AMOSTRAS:")
-    paragraph = doc.paragraphs[-1]
-    paragraph.style.font.name = 'Arial'
-    paragraph.style.font.size = Pt(10)
-    paragraph.runs[0].font.bold = True
-    table_samples = doc.add_table(rows=len(sample_data), cols=2)
-    for i, (key, value) in enumerate(sample_data.items()):
-        cell_left = table_samples.cell(i, 0)
-        cell_right = table_samples.cell(i, 1)
-        for paragraph in cell_left.paragraphs:
-            paragraph.style.font.name = 'Arial'
-            paragraph.style.font.size = Pt(10)
-            for run in paragraph.runs:
-                run.font.name = 'Arial'
-                run.font.size = Pt(10)
-                run.font.bold = True
-        cell_left.text = f"{key}:"
-        for paragraph in cell_right.paragraphs:
-            paragraph.style.font.name = 'Arial'
-            paragraph.style.font.size = Pt(10)
-            for run in paragraph.runs:
-                run.font.name = 'Arial'
-                run.font.size = Pt(10)
-        cell_right.text = value
-
     # Adicionar fotos da peneira
-    doc.add_paragraph("\n7. FOTOS DA PENEIRA:")
+    doc.add_paragraph("\n8. FOTOS DA PENEIRA:")
     paragraph = doc.paragraphs[-1]
     paragraph.style.font.name = 'Arial'
     paragraph.style.font.size = Pt(10)
@@ -424,9 +427,9 @@ st.markdown("""
 **Instruções:**
 1. Insira o **Número do Relatório**.
 2. Preencha as **Informações Gerais**.
-3. Preencha a **Análise da Peneira**.
-4. Carregue as fotos da peneira.
-5. Carregue as imagens das amostras.
-6. Preencha os **Detalhes das Amostras**.
+3. Carregue as imagens das amostras.
+4. Preencha os **Detalhes das Amostras**.
+5. Preencha a **Análise da Peneira**.
+6. Carregue as fotos da peneira.
 7. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
