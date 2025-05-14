@@ -5,7 +5,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
-from docx2pdf import convert
+import pypandoc
 import tempfile
 import os
 
@@ -182,15 +182,16 @@ if st.button("Gerar Relatório"):
             file_name=OUTPUT_FILENAME_DOCX,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        # Converter para PDF e oferecer download
+        # Converter para PDF usando pypandoc
         try:
-            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_file:
-                tmp_file.write(word_buffer.getvalue())
-                temp_docx_path = tmp_file.name
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_docx_file:
+                tmp_docx_file.write(word_buffer.getvalue())
+                docx_path = tmp_docx_file.name
 
-            convert(temp_docx_path, OUTPUT_FILENAME_PDF)
+            pdf_path = OUTPUT_FILENAME_PDF
+            pypandoc.convert_file(docx_path, 'pdf', outputfile=pdf_path)
 
-            with open(OUTPUT_FILENAME_PDF, "rb") as pdf_file:
+            with open(pdf_path, "rb") as pdf_file:
                 st.download_button(
                     label="Baixar Relatório PDF",
                     data=pdf_file.read(),
@@ -198,9 +199,9 @@ if st.button("Gerar Relatório"):
                     mime="application/pdf"
                 )
 
-            os.remove(temp_docx_path)
-            if os.path.exists(OUTPUT_FILENAME_PDF):
-                os.remove(OUTPUT_FILENAME_PDF)
+            os.remove(docx_path)
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
 
         except Exception as e:
             st.error(f"Erro ao converter para PDF: {e}")
