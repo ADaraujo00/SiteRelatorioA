@@ -2,7 +2,7 @@ import streamlit as st
 from docx import Document
 from io import BytesIO
 
-# Nome do arquivo de template Word (deve estar no mesmo diretório ou você precisa fornecer o caminho)
+# Nome do arquivo de template Word (deve estar no mesmo diretório)
 TEMPLATE_PATH = 'template_relatorio.docx'
 OUTPUT_FILENAME = 'relatorio_gerado.docx'
 
