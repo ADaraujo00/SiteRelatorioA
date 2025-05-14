@@ -83,9 +83,11 @@ for j in range(1, len(col_labels_sieve)):
     retained_2mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_2_mm_(g)_{min_med_max}", 0) or 0)
     retained_4mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_4_mm_(g)_{min_med_max}", 0) or 0)
 
-    # Usando Carrots mass como Mt para ambas as peneiras
+    # Cálculo da Performance 2 mm
     if carrots_mass > 0:
-        performance_2mm[min_med_max] = 1 - (retained_2mm / carrots_mass) if carrots_mass > 0 else 0
+        mr_2mm = retained_2mm + retained_4mm
+        performance_2mm[min_med_max] = 1 - (mr_2mm / carrots_mass) if carrots_mass > 0 else 0
+        # Cálculo da Performance 4 mm (mantendo o cálculo anterior)
         performance_4mm[min_med_max] = 1 - (retained_4mm / carrots_mass) if carrots_mass > 0 else 0
     else:
         performance_2mm[min_med_max] = 0
@@ -290,7 +292,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
-            key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
+            key = f"{row_label.replace(' ','_')}_{col_labels_sieve[j].lower()}"
             value = sieve_data.get(key, "")
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
