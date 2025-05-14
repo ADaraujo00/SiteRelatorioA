@@ -2,14 +2,16 @@ import streamlit as st
 from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
+from docx.enum.style import WD_STYLE_TYPE
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import docx  # Importamos a biblioteca docx explicitamente
 
 OUTPUT_FILENAME = 'relatorio_completo.docx'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
-HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome na mesma pasta do script
+HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome
 
 st.title("Gerador de Relatório Completo")
 
@@ -58,17 +60,29 @@ for question in questions:
 def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
 
-    # Adicionar a imagem de cabeçalho
     try:
-        doc.add_picture(HEADER_IMAGE_PATH, width=Inches(6)) # Ajuste a largura conforme necessário
-        header_paragraph = doc.paragraphs[-1]
-        header_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    except Exception as e:
-        doc.add_paragraph(f"Erro ao adicionar imagem de cabeçalho: {e}")
+        img = Image.open(HEADER_IMAGE_PATH).convert("RGB")
+        draw = ImageDraw.Draw(img)
+        try:
+            font = ImageFont.truetype("arial.ttf", 36)
+        except IOError:
+            font = ImageFont.load_default()
+        text_color = (0, 0, 0)
 
-    # Adicionar o número do relatório
-    doc.add_paragraph(f"Relatório No: {report_num}")
-    doc.add_paragraph() # Espaço
+        cover_bbox = (780, 85, 950, 115)
+        cover_color = (18, 57, 96)
+        draw.rectangle(cover_bbox, fill=cover_color)
+
+        text_position = (780, 85)
+        draw.text(text_position, report_num, fill=text_color, font=font)
+
+        img_buffer = BytesIO()
+        img.save(img_buffer, format="PNG")
+        img_buffer.seek(0)
+        doc.add_picture(img_buffer, width=Inches(6))
+
+    except Exception as e:
+        doc.add_paragraph(f"Erro ao processar imagem de cabeçalho: {e}")
 
     def remove_table_borders(table):
         tblPr = table._element.xpath('./w:tblPr')[0]
@@ -79,13 +93,17 @@ def generate_word_report(report_num, general_data, images, sample_data):
             borders.append(border)
         tblPr.append(borders)
 
-    # Informações Gerais em tabela com respostas abaixo
+    # Informações Gerais em tabela com respostas abaixo (rótulos em negrito)
     table_row1 = doc.add_table(rows=2, cols=4)
     cells_row1 = table_row1.rows[0].cells
     cells_row1[0].text = "Product:"
+    cells_row1[0].paragraphs[0].runs[0].font.bold = True
     cells_row1[1].text = "Project:"
+    cells_row1[1].paragraphs[0].runs[0].font.bold = True
     cells_row1[2].text = "Lot:"
+    cells_row1[2].paragraphs[0].runs[0].font.bold = True
     cells_row1[3].text = "Released:"
+    cells_row1[3].paragraphs[0].runs[0].font.bold = True
     cells_row2 = table_row1.rows[1].cells
     cells_row2[0].text = general_data['Product']
     cells_row2[1].text = general_data['Project']
@@ -96,9 +114,13 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_row2 = doc.add_table(rows=2, cols=4)
     cells_row3 = table_row2.rows[0].cells
     cells_row3[0].text = "Requested by:"
+    cells_row3[0].paragraphs[0].runs[0].font.bold = True
     cells_row3[1].text = "Performed by:"
+    cells_row3[1].paragraphs[0].runs[0].font.bold = True
     cells_row3[2].text = "Reviewed by:"
+    cells_row3[2].paragraphs[0].runs[0].font.bold = True
     cells_row3[3].text = "Approved by:"
+    cells_row3[3].paragraphs[0].runs[0].font.bold = True
     cells_row4 = table_row2.rows[1].cells
     cells_row4[0].text = general_data['Requested by']
     cells_row4[1].text = general_data['Performed by']
@@ -130,7 +152,6 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
         cell_left = table_samples.cell(i, 0)
-        cell_right = table_samples.cell(i, 1)
         cell_left.text = f"{key}:"
         cell_left.paragraphs[0].runs[0].font.bold = True
         cell_right.text = value
