@@ -1,55 +1,3 @@
-import streamlit as st
-from docx import Document
-from docx.shared import Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from io import BytesIO
-from PIL import Image
-import docx  # Importamos a biblioteca docx explicitamente
-
-OUTPUT_FILENAME = 'relatorio_completo.docx'
-
-st.title("Gerador de Relatório Completo")
-
-st.subheader("Informações Gerais:")
-
-col1, col2, col3, col4 = st.columns(4)
-product_general = col1.text_input("Product:")
-project = col2.text_input("Project:")
-lot = col3.text_input("Lot:")
-released = col4.text_input("Released:")
-
-col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("Requested by:")
-performed_by = col6.text_input("Performed by:")
-reviewed_by = col7.text_input("Reviewed by:")
-approved_by = col8.text_input("Approved by:")
-
-st.subheader("3. SAMPLES DESCRIPTION:")
-
-image_labels = [
-    "Foto base frente", "Foto base costas", "Foto base cima", "Foto base baixo",
-    "Produto inteiro frente com jarra blender", "Produto inteiro lado com jarra blender",
-    "Produto inteiro costas com jarra blender", "Produto inteiro lado com jarra blender",
-    "Jarra lado", "Jarra frente", "Jarra cima", "Jarra embaixo"
-]
-
-image_uploaders = []
-cols_grid = [st.columns(4) for _ in range(3)]
-for i in range(3):
-    for j in range(4):
-        index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
-        image_uploaders.append(uploader)
-
-st.subheader("Detalhes das Amostras:")
-sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
-
-for question in questions:
-    col_q, col_a = st.columns([1, 2])
-    col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
-
 def generate_word_report(general_data, images, sample_data):
     doc = Document()
 
@@ -58,33 +6,43 @@ def generate_word_report(general_data, images, sample_data):
     title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     doc.add_paragraph() # Espaço após o título
 
+    def remove_table_borders(table):
+        tblPr = table._tbl.get_or_add_tblPr()
+        borders = docx.oxml.shared.OxmlElement('w:tblBorders')
+        top = docx.oxml.shared.OxmlElement('w:top')
+        top.set(docx.oxml.ns.qn('w:val'), 'nil')
+        left = docx.oxml.shared.OxmlElement('w:left')
+        left.set(docx.oxml.ns.qn('w:val'), 'nil')
+        bottom = docx.oxml.shared.OxmlElement('w:bottom')
+        bottom.set(docx.oxml.ns.qn('w:val'), 'nil')
+        right = docx.oxml.shared.OxmlElement('w:right')
+        right.set(docx.oxml.ns.qn('w:val'), 'nil')
+        insideH = docx.oxml.shared.OxmlElement('w:insideH')
+        insideH.set(docx.oxml.ns.qn('w:val'), 'nil')
+        insideV = docx.oxml.shared.OxmlElement('w:insideV')
+        insideV.set(docx.oxml.ns.qn('w:val'), 'nil')
+        borders.extend([top, left, bottom, right, insideH, insideV])
+        tblPr.append(borders)
+
     # Primeira linha de informações gerais
     table1 = doc.add_table(rows=1, cols=4)
-    table1.style = 'Table Grid' # You can choose a different style or remove it
     cells1 = table1.rows[0].cells
     cells1[0].text = f"Product: {general_data['Product']}"
     cells1[1].text = f"Project: {general_data['Project']}"
     cells1[2].text = f"Lot: {general_data['Lot']}"
     cells1[3].text = f"Released: {general_data['Released']}"
-    # Remover bordas da tabela 1 (optional)
-    for row in table1.rows:
-        for cell in row.cells:
-            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+    remove_table_borders(table1)
 
     doc.add_paragraph() # Espaço entre as linhas
 
     # Segunda linha de informações gerais
     table2 = doc.add_table(rows=1, cols=4)
-    table2.style = 'Table Grid' # You can choose a different style or remove it
     cells2 = table2.rows[0].cells
     cells2[0].text = f"Requested by: {general_data['Requested by']}"
     cells2[1].text = f"Performed by: {general_data['Performed by']}"
     cells2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
     cells2[3].text = f"Approved by: {general_data['Approved by']}"
-    # Remover bordas da tabela 2 (optional)
-    for row in table2.rows:
-        for cell in row.cells:
-            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+    remove_table_borders(table2)
 
     doc.add_paragraph() # Espaço antes da próxima seção
 
@@ -123,33 +81,3 @@ def generate_word_report(general_data, images, sample_data):
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
-if st.button("Gerar Relatório"):
-    uploaded_files = [uploader for uploader in image_uploaders if uploader is not None]
-    general_info = {
-        "Product": product_general,
-        "Project": project,
-        "Lot": lot,
-        "Released": released,
-        "Requested by": requested_by,
-        "Performed by": performed_by,
-        "Reviewed by": reviewed_by,
-        "Approved by": approved_by
-    }
-    word_buffer = generate_word_report(general_info, uploaded_files, sample_details_input)
-    if word_buffer:
-        st.download_button(
-            label="Baixar Relatório Word",
-            data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
-
-st.markdown("""
----
-**Instruções:**
-1. Preencha as informações gerais.
-2. Carregue as imagens correspondentes a cada descrição.
-3. Preencha os detalhes das amostras.
-4. Clique em "Gerar Relatório" para baixar o documento Word.
-""")
