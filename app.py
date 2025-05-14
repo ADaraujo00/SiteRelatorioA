@@ -297,7 +297,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
             paragraph.runs[0].font.bold = True
 
     # Linhas de input
-    for i, row_label in enumerate(row_labels_sieve_input = row_labels_sieve_input[i]
+    for i, row_label in enumerate(row_labels_sieve_input):
         cell = sieve_table.cell(i + 1, 0)
         cell.text = sieve_input
         for paragraph in cell.paragraphs:
