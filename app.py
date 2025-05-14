@@ -4,70 +4,66 @@ from docx.shared import Inches
 from io import BytesIO
 from PIL import Image
 
-OUTPUT_FILENAME = 'relatorio_amostras.docx'
+OUTPUT_FILENAME = 'relatorio_com_multiplas_imagens.docx'
 
-st.title("Descrição de Amostras")
+st.title("Gerador de Relatório Word")
 
-st.subheader("Imagens das Amostras:")
-image_files = []
-for i in range(12):
-    uploaded_file = st.file_uploader(f"Imagem {i+1}:", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        image_files.append(uploaded_file)
-    else:
-        image_files.append(None)
+st.subheader("Preencha as informações:")
 
-st.subheader("Detalhes das Amostras:")
-product = st.text_input("Product:")
-accessories = st.text_input("Accessories:")
-model = st.text_input("Model:")
-voltage = st.text_input("Voltage:")
-dimensions = st.text_input("Dimensions:")
-supplier = st.text_input("Supplier:")
-quantity = st.text_input("Quantity:")
-volume = st.text_input("Volume:")
+col1, col2, col3, col4 = st.columns(4)
+product = col1.text_input("Product:")
+project = col2.text_input("Project:")
+lot = col3.text_input("Lot:")
+released = col4.text_input("Released:")
 
-sample_details = {
+col5, col6, col7, col8 = st.columns(4)
+requested_by = col5.text_input("Requested by:")
+performed_by = col6.text_input("Performed by:")
+reviewed_by = col7.text_input("Reviewed by:")
+approved_by = col8.text_input("Approved by:")
+
+uploaded_images = st.file_uploader("Carregar Imagens:", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+
+report_data = {
     "Product": product,
-    "Accessories": accessories,
-    "Model": model,
-    "Voltage": voltage,
-    "Dimensions": dimensions,
-    "Supplier": supplier,
-    "Quantity": quantity,
-    "Volume": volume,
+    "Project": project,
+    "Lot": lot,
+    "Released": released,
+    "Requested by": requested_by,
+    "Performed by": performed_by,
+    "Reviewed by": reviewed_by,
+    "Approved by": approved_by
 }
 
-def generate_word_report(images, details):
+def generate_word_report(data, images):
     doc = Document()
-    doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
-    # Adicionar as imagens em layout de grade (3x4)
-    for i in range(0, len(images), 4):
-        row = doc.add_paragraph()
-        for j in range(4):
-            if i + j < len(images) and images[i + j] is not None:
-                try:
-                    img = Image.open(images[i + j])
-                    # Ajustar o tamanho da imagem conforme necessário
-                    width, height = img.size
-                    ratio = height / width
-                    new_width = 2.5  # Polegadas
-                    new_height = new_width * ratio
-                    row.add_run().add_picture(images[i + j], width=Inches(new_width), height=Inches(new_height))
-                except Exception as e:
-                    doc.add_paragraph(f"Erro ao adicionar imagem {i+j+1}: {e}")
-            row.add_run("   ") # Adiciona algum espaço entre as imagens
-        doc.add_paragraph() # Espaço entre as linhas de imagens
+    doc.add_paragraph(f"**Product:** {data['Product']}")
+    doc.add_paragraph(f"**Project:** {data['Project']}")
+    doc.add_paragraph(f"**Lot:** {data['Lot']}")
+    doc.add_paragraph(f"**Released:** {data['Released']}")
+    doc.add_paragraph()
+    doc.add_paragraph(f"**Requested by:** {data['Requested by']}")
+    doc.add_paragraph(f"**Performed by:** {data['Performed by']}")
+    doc.add_paragraph(f"**Reviewed by:** {data['Reviewed by']}")
+    doc.add_paragraph(f"**Approved by:** {data['Approved by']}")
+    doc.add_paragraph()
 
-    # Adicionar a tabela com os detalhes
-    table = doc.add_table(rows=len(details), cols=2)
-    for i, (key, value) in enumerate(details.items()):
-        cell_left = table.cell(i, 0)
-        cell_right = table.cell(i, 1)
-        cell_left.text = f"{key}:"
-        cell_left.paragraphs[0].runs[0].font.bold = True
-        cell_right.text = value
+    if images:
+        doc.add_paragraph("Imagens:")
+        for img_file in images:
+            try:
+                img = Image.open(img_file)
+                width, height = img.size
+                ratio = height / width
+                new_width = 4  # Polegadas (ajuste conforme necessário)
+                new_height = new_width * ratio
+                doc.add_picture(img_file, width=Inches(new_width), height=Inches(new_height))
+                doc.add_paragraph() # Adiciona um espaço após cada imagem
+            except Exception as e:
+                doc.add_paragraph(f"Erro ao adicionar imagem: {e}")
+    else:
+        doc.add_paragraph("Nenhuma imagem carregada.")
 
     # Salvar o documento na memória
     buffer = BytesIO()
@@ -75,20 +71,23 @@ def generate_word_report(images, details):
     buffer.seek(0)
     return buffer
 
-if st.button("Gerar Relatório"):
-    word_buffer = generate_word_report(image_files, sample_details)
-    if word_buffer:
-        st.download_button(
-            label="Baixar Relatório Word",
-            data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+if st.button("Gerar Relatório Word"):
+    if all(report_data.values()):
+        word_buffer = generate_word_report(report_data, uploaded_images)
+        if word_buffer:
+            st.download_button(
+                label="Baixar Relatório Word",
+                data=word_buffer.getvalue(),
+                file_name=OUTPUT_FILENAME,
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+    else:
+        st.warning("Por favor, preencha todos os campos.")
 
 st.markdown("""
 ---
 **Instruções:**
-1. Carregue até 12 imagens. Se menos forem carregadas, o layout se ajustará.
-2. Preencha os detalhes das amostras na tabela.
-3. Clique em "Gerar Relatório Word" para baixar o documento.
+1. Preencha todos os campos solicitados (os primeiros quatro na primeira linha, os seguintes na segunda).
+2. Carregue as imagens desejadas usando o uploader. Você pode selecionar múltiplos arquivos.
+3. Clique em "Gerar Relatório Word" para baixar o documento com as informações e as imagens.
 """)
