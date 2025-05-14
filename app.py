@@ -119,7 +119,7 @@ col_label2.markdown("**Picture 4 mm**")
 
 def generate_word_report(report_num, general_data, images, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
     doc = Document()
-
+    print(f"Número de linhas de input: {len(row_labels_sieve_input)}") # DEBUG
     # Definir as margens
     sections = doc.sections
     for section in sections:
@@ -297,8 +297,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
             for paragraph in cell.paragraphs:
-                paragraph.style.font.name = 'Arial'
-                paragraph.style.font.size = Pt(10)
+                paragraph.style.font.name = 'Arial'paragraph.style.font.size = Pt(10)
 
     # Linhas de performance
     cell_perf_2mm_label = sieve_table.cell(len(row_labels_sieve_input) + 1, 0)
