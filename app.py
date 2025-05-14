@@ -3,13 +3,13 @@ from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
 
 OUTPUT_FILENAME = 'relatorio_completo.docx'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
-HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome
+HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome na mesma pasta do script
 
 st.title("Gerador de Relatório Completo")
 
@@ -58,33 +58,17 @@ for question in questions:
 def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
 
+    # Adicionar a imagem de cabeçalho
     try:
-        img = Image.open(HEADER_IMAGE_PATH).convert("RGB")
-        draw = ImageDraw.Draw(img)
-        # Vamos tentar uma fonte padrão. Você pode precisar ajustar a fonte e o tamanho.
-        try:
-            font = ImageFont.truetype("arial.ttf", 36) # Tente com Arial, ajuste o tamanho
-        except IOError:
-            font = ImageFont.load_default()
-        text_color = (0, 0, 0) # Cor preta para o texto do relatório
-
-        # Coordenadas aproximadas para cobrir "TRxxxxx". Ajuste conforme necessário.
-        cover_bbox = (780, 85, 950, 115) # (left, top, right, bottom)
-        cover_color = (18, 57, 96) # Cor de fundo azul da imagem (aproximada)
-        draw.rectangle(cover_bbox, fill=cover_color)
-
-        # Coordenadas aproximadas para o novo número. Ajuste conforme necessário.
-        text_position = (780, 85)
-        draw.text(text_position, report_num, fill=text_color, font=font)
-
-        # Salvar a imagem modificada na memória
-        img_buffer = BytesIO()
-        img.save(img_buffer, format="PNG")
-        img_buffer.seek(0)
-        doc.add_picture(img_buffer, width=Inches(6)) # Adicionar a imagem modificada
-
+        doc.add_picture(HEADER_IMAGE_PATH, width=Inches(6)) # Ajuste a largura conforme necessário
+        header_paragraph = doc.paragraphs[-1]
+        header_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     except Exception as e:
-        doc.add_paragraph(f"Erro ao processar imagem de cabeçalho: {e}")
+        doc.add_paragraph(f"Erro ao adicionar imagem de cabeçalho: {e}")
+
+    # Adicionar o número do relatório
+    doc.add_paragraph(f"Relatório No: {report_num}")
+    doc.add_paragraph() # Espaço
 
     def remove_table_borders(table):
         tblPr = table._element.xpath('./w:tblPr')[0]
