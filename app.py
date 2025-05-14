@@ -1,79 +1,33 @@
-import streamlit as st
-from docx import Document
-from docx.shared import Inches
+from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from io import BytesIO
-from PIL import Image
-import docx  # Importamos a biblioteca docx explicitamente
-
-OUTPUT_FILENAME = 'relatorio_completo.docx'
-IMAGE_SIZE_CM = 4
-IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
-# Salve a imagem com este nome na mesma pasta do script
-HEADER_IMAGE_PATH = 'electrolux_header.png'
-
-st.title("Gerador de Relatório Completo")
-
-report_number = st.text_input("Número do Relatório:", "TR00001")
-
-st.subheader("Informações Gerais:")
-
-col1, col2, col3, col4 = st.columns(4)
-product_general = col1.text_input("Product:")
-project = col2.text_input("Project:")
-lot = col3.text_input("Lot:")
-released = col4.text_input("Released:")
-
-col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("Requested by:")
-performed_by = col6.text_input("Performed by:")
-reviewed_by = col7.text_input("Reviewed by:")
-approved_by = col8.text_input("Approved by:")
-
-st.subheader("3. SAMPLES DESCRIPTION:")
-
-image_labels = [
-    "Foto base frente", "Foto base costas", "Foto base cima", "Foto base baixo",
-    "Produto inteiro frente com jarra blender", "Produto inteiro lado com jarra blender",
-    "Produto inteiro costas com jarra blender", "Produto inteiro lado com jarra blender",
-    "Jarra lado", "Jarra frente", "Jarra cima", "Jarra embaixo"
-]
-
-image_uploaders = []
-cols_grid = [st.columns(4) for _ in range(3)]
-for i in range(3):
-    for j in range(4):
-        index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=[
-                                                 "jpg", "jpeg", "png"], key=f"image_{index}")
-        image_uploaders.append(uploader)
-
-st.subheader("Detalhes das Amostras:")
-sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage",
-             "Dimensions", "Supplier", "Quantity", "Volume"]
-
-for question in questions:
-    col_q, col_a = st.columns([1, 2])
-    col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input(
-        "", label_visibility="collapsed", key=question)
-
+from docx.styles import WD_STYLE_TYPE
+from docx.enum.style import WD_STYLE
+from docx.shared import RGBColor
 
 def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
 
+    # Definir a fonte Arial tamanho 10 como padrão
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Arial'
+    font.size = Pt(10)
+
     # Adicionar a imagem de cabeçalho
     try:
-        # Ajuste a largura conforme necessário
-        doc.add_picture(HEADER_IMAGE_PATH, width=Inches(6))
+        doc.add_picture(HEADER_IMAGE_PATH, width=Inches(19.50 / 2.54))
         header_paragraph = doc.paragraphs[-1]
         header_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     except Exception as e:
         doc.add_paragraph(f"Erro ao adicionar imagem de cabeçalho: {e}")
+        paragraph = doc.paragraphs[-1]
+        paragraph.style.font.name = 'Arial'
+        paragraph.style.font.size = Pt(10)
 
     # Adicionar o número do relatório
-    doc.add_paragraph(f"Relatório No: {report_num}")
+    paragraph = doc.add_paragraph(f"Relatório No: {report_num}")
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
     doc.add_paragraph()  # Espaço
 
     def remove_table_borders(table):
@@ -87,6 +41,16 @@ def generate_word_report(report_num, general_data, images, sample_data):
 
     # Informações Gerais em tabela com respostas abaixo
     table_row1 = doc.add_table(rows=2, cols=4)
+    for row in table_row1.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+                for run in paragraph.runs:
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(10)
+                    if "Product:" in cell.text or "Project:" in cell.text or "Lot:" in cell.text or "Released:" in cell.text:
+                        run.font.bold = True
     cells_row1 = table_row1.rows[0].cells
     cells_row1[0].text = "Product:"
     cells_row1[1].text = "Project:"
@@ -100,6 +64,16 @@ def generate_word_report(report_num, general_data, images, sample_data):
     remove_table_borders(table_row1)
 
     table_row2 = doc.add_table(rows=2, cols=4)
+    for row in table_row2.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+                for run in paragraph.runs:
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(10)
+                    if "Requested by:" in cell.text or "Performed by:" in cell.text or "Reviewed by:" in cell.text or "Approved by:" in cell.text:
+                        run.font.bold = True
     cells_row3 = table_row2.rows[0].cells
     cells_row3[0].text = "Requested by:"
     cells_row3[1].text = "Performed by:"
@@ -112,9 +86,14 @@ def generate_word_report(report_num, general_data, images, sample_data):
     cells_row4[3].text = general_data['Approved by']
     remove_table_borders(table_row2)
 
-    doc.add_paragraph()  # Espaço antes da próxima seção
+    paragraph = doc.add_paragraph()  # Espaço antes da próxima seção
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
 
-    doc.add_paragraph("3. SAMPLES DESCRIPTION:")
+    paragraph = doc.add_paragraph("3. SAMPLES DESCRIPTION:")
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
 
     # Adicionar as imagens em tabela 3x4 com tamanho fixo
     image_table = doc.add_table(rows=3, cols=4)
@@ -122,6 +101,12 @@ def generate_word_report(report_num, general_data, images, sample_data):
         for j in range(4):
             index = i * 4 + j
             cell = image_table.cell(i, j)
+            for paragraph in cell.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+                for run in paragraph.runs:
+                    run.font.name = 'Arial'
+                    run.font.size = Pt(10)
             if index < len(images) and images[index] is not None:
                 try:
                     cell.paragraphs[0].add_run().add_picture(
@@ -131,14 +116,35 @@ def generate_word_report(report_num, general_data, images, sample_data):
                     )
                 except Exception as e:
                     cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
+                    for paragraph in cell.paragraphs:
+                        paragraph.style.font.name = 'Arial'
+                        paragraph.style.font.size = Pt(10)
+                        for run in paragraph.runs:
+                            run.font.name = 'Arial'
+                            run.font.size = Pt(10)
 
-    doc.add_paragraph("\nDetalhes das Amostras:")
+    paragraph = doc.add_paragraph("\nDetalhes das Amostras:")
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
     table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
         cell_left = table_samples.cell(i, 0)
         cell_right = table_samples.cell(i, 1)
+        for paragraph in cell_left.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            for run in paragraph.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(10)
+                run.font.bold = True
         cell_left.text = f"{key}:"
-        cell_left.paragraphs[0].runs[0].font.bold = True
+        for paragraph in cell_right.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            for run in paragraph.runs:
+                run.font.name = 'Arial'
+                run.font.size = Pt(10)
         cell_right.text = value
 
     # Salvar o documento na memória
@@ -146,37 +152,3 @@ def generate_word_report(report_num, general_data, images, sample_data):
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
-
-if st.button("Gerar Relatório"):
-    uploaded_files = [
-        uploader for uploader in image_uploaders if uploader is not None]
-    general_info = {
-        "Product": product_general,
-        "Project": project,
-        "Lot": lot,
-        "Released": released,
-        "Requested by": requested_by,
-        "Performed by": performed_by,
-        "Reviewed by": reviewed_by,
-        "Approved by": approved_by
-    }
-    word_buffer = generate_word_report(
-        report_number, general_info, uploaded_files, sample_details_input)
-    if word_buffer:
-        st.download_button(
-            label="Baixar Relatório Word",
-            data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
-
-st.markdown("""
----
-**Instruções:**
-1. Insira o número do relatório.
-2. Preencha as informações gerais.
-3. Carregue as imagens correspondentes a cada descrição.
-4. Preencha os detalhes das amostras.
-5. Clique em "Gerar Relatório" para baixar o documento Word.
-""")
