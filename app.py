@@ -117,7 +117,7 @@ col_photo2, col_label2 = st.columns([1, 3])
 photo_4mm = col_photo2.file_uploader("Foto Peneira 4 mm:", type=["jpg", "jpeg", "png"], key="photo_4mm")
 col_label2.markdown("**Picture 4 mm**")
 
-def generate_word_report(report_num, general_data, images, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
+def generate_word_report(report_num, general_data, images_data, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
     doc = Document()
     print(f"Número de linhas de input: {len(row_labels_sieve_input)}") # DEBUG
     # Definir as margens
@@ -217,11 +217,12 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
 
     # Adicionar as imagens em tabela 3x4 com tamanho fixo
     image_table = doc.add_table(rows=3, cols=4)
+    images = [img for img in images_data if img is not None]
     for i in range(3):
         for j in range(4):
             index = i * 4 + j
             cell = image_table.cell(i, j)
-            if index < len(images) and images[index] is not None:
+            if index < len(images):
                 try:
                     cell.paragraphs[0].add_run().add_picture(
                         images[index],
@@ -297,7 +298,6 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
             for paragraph in cell.paragraphs:
-                paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(10)
 
     # Linhas de performance
