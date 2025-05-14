@@ -4,53 +4,35 @@ from docx.shared import Inches
 from io import BytesIO
 from PIL import Image
 
-OUTPUT_FILENAME = 'relatorio_com_multiplas_imagens.docx'
+OUTPUT_FILENAME = 'relatorio_com_tabela.docx'
 
-st.title("Gerador de Relatório Word")
+st.title("Gerador de Relatório com Tabela e Imagens")
 
-st.subheader("Preencha as informações:")
+st.subheader("Detalhes das Amostras:")
 
-col1, col2, col3, col4 = st.columns(4)
-product = col1.text_input("Product:")
-project = col2.text_input("Project:")
-lot = col3.text_input("Lot:")
-released = col4.text_input("Released:")
+sample_details_input = {}
+questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
 
-col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("Requested by:")
-performed_by = col6.text_input("Performed by:")
-reviewed_by = col7.text_input("Reviewed by:")
-approved_by = col8.text_input("Approved by:")
+for question in questions:
+    sample_details_input[question] = st.text_input(f"{question}:")
 
-uploaded_images = st.file_uploader("Carregar Imagens:", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+st.subheader("Carregar Imagens:")
+uploaded_images = st.file_uploader("Selecione as imagens:", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
-report_data = {
-    "Product": product,
-    "Project": project,
-    "Lot": lot,
-    "Released": released,
-    "Requested by": requested_by,
-    "Performed by": performed_by,
-    "Reviewed by": reviewed_by,
-    "Approved by": approved_by
-}
-
-def generate_word_report(data, images):
+def generate_word_report(details, images):
     doc = Document()
 
-    doc.add_paragraph(f"**Product:** {data['Product']}")
-    doc.add_paragraph(f"**Project:** {data['Project']}")
-    doc.add_paragraph(f"**Lot:** {data['Lot']}")
-    doc.add_paragraph(f"**Released:** {data['Released']}")
-    doc.add_paragraph()
-    doc.add_paragraph(f"**Requested by:** {data['Requested by']}")
-    doc.add_paragraph(f"**Performed by:** {data['Performed by']}")
-    doc.add_paragraph(f"**Reviewed by:** {data['Reviewed by']}")
-    doc.add_paragraph(f"**Approved by:** {data['Approved by']}")
-    doc.add_paragraph()
+    doc.add_paragraph("Detalhes das Amostras:")
+    table = doc.add_table(rows=len(details), cols=2)
+    for i, (key, value) in enumerate(details.items()):
+        cell_left = table.cell(i, 0)
+        cell_right = table.cell(i, 1)
+        cell_left.text = f"{key}:"
+        cell_left.paragraphs[0].runs[0].font.bold = True
+        cell_right.text = value
 
+    doc.add_paragraph("\nImagens:")
     if images:
-        doc.add_paragraph("Imagens:")
         for img_file in images:
             try:
                 img = Image.open(img_file)
@@ -72,8 +54,8 @@ def generate_word_report(data, images):
     return buffer
 
 if st.button("Gerar Relatório Word"):
-    if all(report_data.values()):
-        word_buffer = generate_word_report(report_data, uploaded_images)
+    if all(sample_details_input.values()):
+        word_buffer = generate_word_report(sample_details_input, uploaded_images)
         if word_buffer:
             st.download_button(
                 label="Baixar Relatório Word",
@@ -82,12 +64,12 @@ if st.button("Gerar Relatório Word"):
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
     else:
-        st.warning("Por favor, preencha todos os campos.")
+        st.warning("Por favor, preencha todos os detalhes das amostras.")
 
 st.markdown("""
 ---
 **Instruções:**
-1. Preencha todos os campos solicitados (os primeiros quatro na primeira linha, os seguintes na segunda).
-2. Carregue as imagens desejadas usando o uploader. Você pode selecionar múltiplos arquivos.
-3. Clique em "Gerar Relatório Word" para baixar o documento com as informações e as imagens.
+1. Preencha os detalhes das amostras nos campos ao lado de cada pergunta.
+2. Carregue as imagens desejadas.
+3. Clique em "Gerar Relatório Word" para baixar o documento com a tabela de detalhes e as imagens.
 """)
