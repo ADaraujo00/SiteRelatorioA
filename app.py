@@ -19,16 +19,16 @@ report_number = st.text_input("**Número do Relatório:**", "TR00001")
 st.subheader("Informações Gerais:")
 
 col1, col2, col3, col4 = st.columns(4)
-product_general = col1.text_input("**Product:**")
-project = col2.text_input("**Project:**")
-lot = col3.text_input("**Lot:**")
-released = col4.text_input("**Released:**")
+product_general = col1.text_input("**Product:**", label="product")
+project = col2.text_input("**Project:**", label="project")
+lot = col3.text_input("**Lot:**", label="lot")
+released = col4.text_input("**Released:**", label="released")
 
 col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("**Requested by:**")
-performed_by = col6.text_input("**Performed by:**")
-reviewed_by = col7.text_input("**Reviewed by:**")
-approved_by = col8.text_input("**Approved by:**")
+requested_by = col5.text_input("**Requested by:**", label="requested_by")
+performed_by = col6.text_input("**Performed by:**", label="performed_by")
+reviewed_by = col7.text_input("**Reviewed by:**", label="reviewed_by")
+approved_by = col8.text_input("**Approved by:**", label="approved_by")
 
 st.subheader("3. SAMPLES DESCRIPTION:")
 
@@ -54,7 +54,7 @@ questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Suppli
 for question in questions:
     col_q, col_a = st.columns([1, 2])
     col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
+    sample_details_input[question] = col_a.text_input("", label=f"sample_{question.lower()}", label_visibility="collapsed", key=question)
 
 st.subheader("Análise da Peneira:")
 
@@ -74,7 +74,7 @@ for i, row_label in enumerate(row_labels_sieve_input):
     cols_sieve_input[0].markdown(f"**{row_label}**")
     for j in range(1, len(col_labels_sieve)):
         key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
-        sieve_input_values[key] = cols_sieve_input[j].text_input("", key=key)
+        sieve_input_values[key] = cols_sieve_input[j].text_input("", label=key, key=key)
 
 # Cálculo da Performance da Peneira
 for j in range(1, len(col_labels_sieve)):
@@ -297,15 +297,15 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
             paragraph.runs[0].font.bold = True
 
     # Linhas de input
-    for i, row_label in enumerate(row_labels_sieve_input):
+    for i, row_label in enumerate(row_labels_sieve_input = row_labels_sieve_input[i]
         cell = sieve_table.cell(i + 1, 0)
-        cell.text = row_label
+        cell.text = sieve_input
         for paragraph in cell.paragraphs:
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
-            key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
+            key = f"{sieve_input.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
             value = sieve_data.get(key, "")
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
@@ -314,7 +314,8 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.size = Pt(10)
 
     # Linhas de performance
-    cell_perf_2mm_label = sieve_table.cell(len(row_labels_sieve_input) + 1, 0)
+    perf_2mm_row_index = len(row_labels_sieve_input) + 1
+    cell_perf_2mm_label = sieve_table.cell(perf_2mm_row_index, 0)
     cell_perf_2mm_label.text = "Performance 2 mm"
     for paragraph in cell_perf_2mm_label.paragraphs:
         paragraph.style.font.name = 'Arial'
@@ -323,13 +324,14 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     for j in range(1, len(col_labels_sieve)):
         min_med_max = col_labels_sieve[j].lower()
         value = perf_2mm.get(min_med_max, 0)
-        cell_perf_2mm_value = sieve_table.cell(len(row_labels_sieve_input) + 1, j)
+        cell_perf_2mm_value = sieve_table.cell(perf_2mm_row_index, j)
         cell_perf_2mm_value.text = f"{value:.2%}"
         for paragraph in cell_perf_2mm_value.paragraphs:
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
 
-    cell_perf_4mm_label = sieve_table.cell(len(row_labels_sieve_input) + 2, 0)
+    perf_4mm_row_index = len(row_labels_sieve_input) + 1
+    cell_perf_4mm_label = sieve_table.cell(perf_4mm_row_index, 0)
     cell_perf_4mm_label.text = "Performance 4 mm"
     for paragraph in cell_perf_4mm_label.paragraphs:
         paragraph.style.font.name = 'Arial'
@@ -338,7 +340,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     for j in range(1, len(col_labels_sieve)):
         min_med_max = col_labels_sieve[j].lower()
         value = perf_4mm.get(min_med_max, 0)
-        cell_perf_4mm_value = sieve_table.cell(len(row_labels_sieve_input) + 2, j)
+        cell_perf_4mm_value = sieve_table.cell(perf_4mm_row_index, j)
         cell_perf_4mm_value.text = f"{value:.2%}"
         for paragraph in cell_perf_4mm_value.paragraphs:
             paragraph.style.font.name = 'Arial'
