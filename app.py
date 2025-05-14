@@ -1,6 +1,6 @@
 import streamlit as st
 from docx import Document
-from docx.shared import Inches, Pt
+from docx.shared import Inches, Pt, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
@@ -62,6 +62,14 @@ for question in questions:
 
 def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
+
+    # Definir as margens
+    sections = doc.sections
+    for section in sections:
+        section.top_margin = Cm(1.94)
+        section.bottom_margin = Cm(1.62)
+        section.left_margin = Cm(1.02)
+        section.right_margin = Cm(1.02)
 
     # Definir a fonte Arial tamanho 10 como padrão
     style = doc.styles['Normal']
