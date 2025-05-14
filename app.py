@@ -61,9 +61,13 @@ def generate_word_report(general_data, images, sample_data):
     cells_row1[2].text = f"Lot: {general_data['Lot']}"
     cells_row1[3].text = f"Released: {general_data['Released']}"
     # Remover bordas da tabela 1
-    for row in table_row1.rows:
-        for cell in row.cells:
-            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+    tblPr1 = table_row1._tbl.get_or_add_tblPr()
+    borders1 = docx.oxml.shared.OxmlElement('w:tblBorders')
+    for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+        border = docx.oxml.shared.OxmlElement(f'w:{tag}')
+        border.set(docx.oxml.ns.qn('w:val'), 'nil')
+        borders1.append(border)
+    tblPr1.append(borders1)
 
     table_row2 = doc.add_table(rows=1, cols=4)
     cells_row2 = table_row2.rows[0].cells
@@ -72,9 +76,13 @@ def generate_word_report(general_data, images, sample_data):
     cells_row2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
     cells_row2[3].text = f"Approved by: {general_data['Approved by']}"
     # Remover bordas da tabela 2
-    for row in table_row2.rows:
-        for cell in row.cells:
-            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+    tblPr2 = table_row2._tbl.get_or_add_tblPr()
+    borders2 = docx.oxml.shared.OxmlElement('w:tblBorders')
+    for tag in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+        border = docx.oxml.shared.OxmlElement(f'w:{tag}')
+        border.set(docx.oxml.ns.qn('w:val'), 'nil')
+        borders2.append(borders2)
+    tblPr2.append(borders2)
 
     doc.add_paragraph() # Espaço antes da próxima seção
 
