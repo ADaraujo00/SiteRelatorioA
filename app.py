@@ -299,13 +299,13 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     # Linhas de input
     for i, row_label in enumerate(row_labels_sieve_input):
         cell = sieve_table.cell(i + 1, 0)
-        cell.text = sieve_input
+        cell.text = row_label
         for paragraph in cell.paragraphs:
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
-            key = f"{sieve_input.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
+            key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
             value = sieve_data.get(key, "")
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
@@ -398,55 +398,3 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
-
-if st.button("Gerar Relatório"):
-    uploaded_files = [uploader for uploader in image_uploaders if uploader is not None]
-    general_info = {
-        "Product": product_general,
-        "Project": project,
-        "Lot": lot,
-        "Released": released,
-        "Requested by": requested_by,
-        "Performed by": performed_by,
-        "Reviewed by": reviewed_by,
-        "Approved by": approved_by
-    }
-    sieve_data_report = {}
-    for key, value in sieve_input_values.items():
-        sieve_data_report[key] = value
-
-    sieve_photos_report = {
-        "photo_2mm": photo_2mm.getvalue() if photo_2mm else None,
-        "photo_4mm": photo_4mm.getvalue() if photo_4mm else None,
-    }
-
-    word_buffer = generate_word_report(
-        report_number,
-        general_info,
-        [uf.getvalue() if uf else None for uf in uploaded_files],
-        sample_details_input,
-        sieve_data_report,
-        performance_2mm,
-        performance_4mm,
-        sieve_photos_report
-    )
-    if word_buffer:
-        st.download_button(
-            label="Baixar Relatório Word",
-            data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
-
-st.markdown("""
----
-**Instruções:**
-1. Insira o **Número do Relatório**.
-2. Preencha as **Informações Gerais**.
-3. Carregue as imagens das amostras.
-4. Preencha os **Detalhes das Amostras**.
-5. Preencha a **Análise da Peneira**.
-6. Carregue as fotos da peneira.
-7. Clique em "Gerar Relatório" para baixar o documento Word.
-""")
