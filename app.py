@@ -30,6 +30,65 @@ performed_by = col6.text_input("**Performed by:**")
 reviewed_by = col7.text_input("**Reviewed by:**")
 approved_by = col8.text_input("**Approved by:**")
 
+st.subheader("Análise da Peneira:")
+
+col_labels_sieve = ["", "Minimum", "Medium", "Maximum"]
+row_labels_sieve_input = ["Carrots mass (g)", "Water mass (g)", "Mass retained on sieve 2 mm (g)", "Mass retained on sieve 4 mm (g)"]
+sieve_input_values = {}
+performance_2mm = {}
+performance_4mm = {}
+
+cols_sieve_header = st.columns(len(col_labels_sieve))
+for i, label in enumerate(col_labels_sieve):
+    cols_sieve_header[i].markdown(f"**{label}**")
+
+# Inputs do usuário para a análise da peneira
+for i, row_label in enumerate(row_labels_sieve_input):
+    cols_sieve_input = st.columns(len(col_labels_sieve))
+    cols_sieve_input[0].markdown(f"**{row_label}**")
+    for j in range(1, len(col_labels_sieve)):
+        key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
+        sieve_input_values[key] = cols_sieve_input[j].text_input("", key=key)
+
+# Cálculo da Performance da Peneira
+for j in range(1, len(col_labels_sieve)):
+    min_med_max = col_labels_sieve[j].lower()
+    carrots_mass = float(sieve_input_values.get(f"Carrots_mass_(g)_{min_med_max}", 0) or 0)
+    retained_2mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_2_mm_(g)_{min_med_max}", 0) or 0)
+    retained_4mm = float(sieve_input_values.get(f"Mass_retained_on_sieve_4_mm_(g)_{min_med_max}", 0) or 0)
+
+    # Supondo que Carrots mass é o Mt para ambas as peneiras (simplificação)
+    if carrots_mass > 0:
+        performance_2mm[min_med_max] = 1 - (retained_2mm / carrots_mass) if carrots_mass > 0 else 0
+        performance_4mm[min_med_max] = 1 - (retained_4mm / carrots_mass) if carrots_mass > 0 else 0
+    else:
+        performance_2mm[min_med_max] = 0
+        performance_4mm[min_med_max] = 0
+
+# Exibição das Performances da Peneira
+st.markdown("---")
+cols_performance_2mm = st.columns(len(col_labels_sieve))
+cols_performance_2mm[0].markdown("**Performance 2 mm**")
+for i in range(1, len(col_labels_sieve)):
+    value = performance_2mm.get(col_labels_sieve[i].lower(), 0)
+    cols_performance_2mm[i].markdown(f"{value:.2%}")
+
+cols_performance_4mm = st.columns(len(col_labels_sieve))
+cols_performance_4mm[0].markdown("**Performance 4 mm**")
+for i in range(1, len(col_labels_sieve)):
+    value = performance_4mm.get(col_labels_sieve[i].lower(), 0)
+    cols_performance_4mm[i].markdown(f"{value:.2%}")
+
+st.subheader("Fotos da Peneira:")
+
+col_photo1, col_label1 = st.columns([1, 3])
+photo_2mm = col_photo1.file_uploader("Foto Peneira 2 mm:", type=["jpg", "jpeg", "png"], key="photo_2mm")
+col_label1.markdown("**Picture 2 mm**")
+
+col_photo2, col_label2 = st.columns([1, 3])
+photo_4mm = col_photo2.file_uploader("Foto Peneira 4 mm:", type=["jpg", "jpeg", "png"], key="photo_4mm")
+col_label2.markdown("**Picture 4 mm**")
+
 st.subheader("3. SAMPLES DESCRIPTION:")
 
 image_labels = [
@@ -44,23 +103,20 @@ cols_grid = [st.columns(4) for _ in range(3)]
 for i in range(3):
     for j in range(4):
         index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=[
-                                                                            "jpg", "jpeg", "png"], key=f"image_{index}")
+        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
         image_uploaders.append(uploader)
 
 st.subheader("Detalhes das Amostras:")
 sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage",
-             "Dimensions", "Supplier", "Quantity", "Volume"]
+questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
 
 for question in questions:
     col_q, col_a = st.columns([1, 2])
     col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input(
-        "", label_visibility="collapsed", key=question)
+    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
 
 
-def generate_word_report(report_num, general_data, images, sample_data):
+def generate_word_report(report_num, general_data, images, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
     doc = Document()
 
     # Definir as margens
@@ -150,11 +206,73 @@ def generate_word_report(report_num, general_data, images, sample_data):
     cells_row4[3].text = general_data['Approved by']
     remove_table_borders(table_row2)
 
-    paragraph = doc.add_paragraph()  # Espaço antes da próxima seção
-    paragraph.style.font.name = 'Arial'
-    paragraph.style.font.size = Pt(10)
+    doc.add_paragraph()  # Espaço antes da próxima seção
 
-    paragraph = doc.add_paragraph("3. SAMPLES DESCRIPTION:")
+    # Adicionar a seção de análise da peneira
+    doc.add_paragraph("4. ANÁLISE DA PENEIRA:")
+    sieve_table = doc.add_table(rows=len(row_labels_sieve_input) + 2, cols=len(col_labels_sieve))
+    # Cabeçalho
+    for i, label in enumerate(col_labels_sieve):
+        cell = sieve_table.cell(0, i)
+        cell.text = label
+        for paragraph in cell.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            paragraph.runs[0].font.bold = True
+
+    # Linhas de input
+    for i, row_label in enumerate(row_labels_sieve_input):
+        cell = sieve_table.cell(i + 1, 0)
+        cell.text = row_label
+        for paragraph in cell.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+            paragraph.runs[0].font.bold = True
+        for j in range(1, len(col_labels_sieve)):
+            key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
+            value = sieve_data.get(key, "")
+            cell = sieve_table.cell(i + 1, j)
+            cell.text = str(value)
+            for paragraph in cell.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+
+    # Linhas de performance
+    cell_perf_2mm_label = sieve_table.cell(len(row_labels_sieve_input) + 1, 0)
+    cell_perf_2mm_label.text = "Performance 2 mm"
+    for paragraph in cell_perf_2mm_label.paragraphs:
+        paragraph.style.font.name = 'Arial'
+        paragraph.style.font.size = Pt(10)
+        paragraph.runs[0].font.bold = True
+    for j in range(1, len(col_labels_sieve)):
+        min_med_max = col_labels_sieve[j].lower()
+        value = perf_2mm.get(min_med_max, 0)
+        cell_perf_2mm_value = sieve_table.cell(len(row_labels_sieve_input) + 1, j)
+        cell_perf_2mm_value.text = f"{value:.2%}"
+        for paragraph in cell_perf_2mm_value.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+
+    cell_perf_4mm_label = sieve_table.cell(len(row_labels_sieve_input) + 2, 0)
+    cell_perf_4mm_label.text = "Performance 4 mm"
+    for paragraph in cell_perf_4mm_label.paragraphs:
+        paragraph.style.font.name = 'Arial'
+        paragraph.style.font.size = Pt(10)
+        paragraph.runs[0].font.bold = True
+    for j in range(1, len(col_labels_sieve)):
+        min_med_max = col_labels_sieve[j].lower()
+        value = perf_4mm.get(min_med_max, 0)
+        cell_perf_4mm_value = sieve_table.cell(len(row_labels_sieve_input) + 2, j)
+        cell_perf_4mm_value.text = f"{value:.2%}"
+        for paragraph in cell_perf_4mm_value.paragraphs:
+            paragraph.style.font.name = 'Arial'
+            paragraph.style.font.size = Pt(10)
+
+    remove_table_borders(sieve_table)
+    doc.add_paragraph()
+
+    doc.add_paragraph("5. SAMPLES DESCRIPTION:")
+    paragraph = doc.paragraphs[-1]
     paragraph.style.font.name = 'Arial'
     paragraph.style.font.size = Pt(10)
     paragraph.runs[0].font.bold = True
@@ -165,12 +283,6 @@ def generate_word_report(report_num, general_data, images, sample_data):
         for j in range(4):
             index = i * 4 + j
             cell = image_table.cell(i, j)
-            for paragraph in cell.paragraphs:
-                paragraph.style.font.name = 'Arial'
-                paragraph.style.font.size = Pt(10)
-                for run in paragraph.runs:
-                    run.font.name = 'Arial'
-                    run.font.size = Pt(10)
             if index < len(images) and images[index] is not None:
                 try:
                     cell.paragraphs[0].add_run().add_picture(
@@ -186,8 +298,14 @@ def generate_word_report(report_num, general_data, images, sample_data):
                         for run in paragraph.runs:
                             run.font.name = 'Arial'
                             run.font.size = Pt(10)
+            if index < len(image_labels):
+                cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
+                paragraph = cell.paragraphs[-1]
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(8)
 
-    paragraph = doc.add_paragraph("\nDetalhes das Amostras:")
+    doc.add_paragraph("\n6. DETALHES DAS AMOSTRAS:")
+    paragraph = doc.paragraphs[-1]
     paragraph.style.font.name = 'Arial'
     paragraph.style.font.size = Pt(10)
     paragraph.runs[0].font.bold = True
@@ -211,6 +329,50 @@ def generate_word_report(report_num, general_data, images, sample_data):
                 run.font.size = Pt(10)
         cell_right.text = value
 
+    # Adicionar fotos da peneira
+    doc.add_paragraph("\n7. FOTOS DA PENEIRA:")
+    paragraph = doc.paragraphs[-1]
+    paragraph.style.font.name = 'Arial'
+    paragraph.style.font.size = Pt(10)
+    paragraph.runs[0].font.bold = True
+
+    sieve_photo_table = doc.add_table(rows=2, cols=2)
+    if sieve_photos.get("photo_2mm"):
+        cell_2mm = sieve_photo_table.cell(0, 0)
+        try:
+            cell_2mm.paragraphs[0].add_run().add_picture(
+                sieve_photos["photo_2mm"],
+                width=Inches(3),
+                height=Inches(3)
+            )
+            cell_2mm.add_paragraph("Peneira 2 mm").alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for paragraph in cell_2mm.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(8)
+        except Exception as e:
+            cell_2mm.text = f"Erro ao adicionar foto 2mm: {e}"
+            for paragraph in cell_2mm.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+
+    if sieve_photos.get("photo_4mm"):
+        cell_4mm = sieve_photo_table.cell(0, 1)
+        try:
+            cell_4mm.paragraphs[0].add_run().add_picture(
+                sieve_photos["photo_4mm"],
+                width=Inches(3),
+                height=Inches(3)
+            )
+            cell_4mm.add_paragraph("Peneira 4 mm").alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for paragraph in cell_4mm.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(8)
+        except Exception as e:
+            cell_4mm.text = f"Erro ao adicionar foto 4mm: {e}"
+            for paragraph in cell_4mm.paragraphs:
+                paragraph.style.font.name = 'Arial'
+                paragraph.style.font.size = Pt(10)
+
     # Salvar o documento na memória
     buffer = BytesIO()
     doc.save(buffer)
@@ -219,8 +381,7 @@ def generate_word_report(report_num, general_data, images, sample_data):
 
 
 if st.button("Gerar Relatório"):
-    uploaded_files = [
-        uploader for uploader in image_uploaders if uploader is not None]
+    uploaded_files = [uploader for uploader in image_uploaders if uploader is not None]
     general_info = {
         "Product": product_general,
         "Project": project,
@@ -231,8 +392,25 @@ if st.button("Gerar Relatório"):
         "Reviewed by": reviewed_by,
         "Approved by": approved_by
     }
+    sieve_data_report = {}
+    for key, value in sieve_input_values.items():
+        sieve_data_report[key] = value
+
+    sieve_photos_report = {
+        "photo_2mm": photo_2mm.getvalue() if photo_2mm else None,
+        "photo_4mm": photo_4mm.getvalue() if photo_4mm else None,
+    }
+
     word_buffer = generate_word_report(
-        report_number, general_info, uploaded_files, sample_details_input)
+        report_number,
+        general_info,
+        [uf.getvalue() if uf else None for uf in uploaded_files],
+        sample_details_input,
+        sieve_data_report,
+        performance_2mm,
+        performance_4mm,
+        sieve_photos_report
+    )
     if word_buffer:
         st.download_button(
             label="Baixar Relatório Word",
@@ -246,7 +424,9 @@ st.markdown("""
 **Instruções:**
 1. Insira o **Número do Relatório**.
 2. Preencha as **Informações Gerais**.
-3. Carregue as imagens correspondentes a cada descrição.
-4. Preencha os **Detalhes das Amostras**.
-5. Clique em "Gerar Relatório" para baixar o documento Word.
+3. Preencha a **Análise da Peneira**.
+4. Carregue as fotos da peneira.
+5. Carregue as imagens das amostras.
+6. Preencha os **Detalhes das Amostras**.
+7. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
