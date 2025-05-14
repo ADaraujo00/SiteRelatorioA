@@ -1,11 +1,21 @@
 import streamlit as st
 from docx import Document
+from docx.shared import Inches
 from io import BytesIO
 
 OUTPUT_FILENAME = 'relatorio_gerado.docx'
+BODY_IMAGE_PATH = 'imagem_inicial.png'  # Nome do arquivo da imagem a ser inserida no corpo
 
 def generate_word_report(data):
     doc = Document()
+
+    # Adicionar imagem no COMEÇO do corpo
+    try:
+        doc.add_picture(BODY_IMAGE_PATH, width=Inches(4.0)) # Ajuste a largura conforme necessário
+        doc.add_paragraph() # Adiciona uma linha em branco após a imagem
+    except FileNotFoundError:
+        st.warning(f"Arquivo de imagem '{BODY_IMAGE_PATH}' não encontrado.")
+
     doc.add_paragraph(f"**Product:** {data['Product']}")
     doc.add_paragraph(f"**Project:** {data['Project']}")
     doc.add_paragraph(f"**Lot:** {data['Lot']}")
@@ -63,5 +73,6 @@ st.markdown("""
 ---
 **Instruções:**
 1. Preencha todos os campos solicitados.
-2. Clique em "Gerar Relatório Word" para baixar o documento.
+2. Certifique-se de que o arquivo de imagem `imagem_inicial.png` esteja no mesmo diretório deste script.
+3. Clique em "Gerar Relatório Word" para baixar o documento com a imagem no início.
 """)
