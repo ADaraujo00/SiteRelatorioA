@@ -1,6 +1,7 @@
 import streamlit as st
 from docx import Document
 from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
 
@@ -51,17 +52,40 @@ for question in questions:
 def generate_word_report(general_data, images, sample_data):
     doc = Document()
 
-    doc.add_paragraph("Informações Gerais:")
-    doc.add_paragraph(f"**Product:** {general_data['Product']}")
-    doc.add_paragraph(f"**Project:** {general_data['Project']}")
-    doc.add_paragraph(f"**Lot:** {general_data['Lot']}")
-    doc.add_paragraph(f"**Released:** {general_data['Released']}")
-    doc.add_paragraph()
-    doc.add_paragraph(f"**Requested by:** {general_data['Requested by']}")
-    doc.add_paragraph(f"**Performed by:** {general_data['Performed by']}")
-    doc.add_paragraph(f"**Reviewed by:** {general_data['Reviewed by']}")
-    doc.add_paragraph(f"**Approved by:** {general_data['Approved by']}")
-    doc.add_paragraph()
+    # Título centralizado
+    title_para = doc.add_paragraph("Blender Performance evaluation")
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph() # Espaço após o título
+
+    # Primeira linha de informações gerais
+    table1 = doc.add_table(rows=1, cols=4)
+    table1.style = 'Table Grid' # You can choose a different style or remove it
+    cells1 = table1.rows[0].cells
+    cells1[0].text = f"Product: {general_data['Product']}"
+    cells1[1].text = f"Project: {general_data['Project']}"
+    cells1[2].text = f"Lot: {general_data['Lot']}"
+    cells1[3].text = f"Released: {general_data['Released']}"
+    # Remover bordas da tabela 1 (optional)
+    for row in table1.rows:
+        for cell in row.cells:
+            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+
+    doc.add_paragraph() # Espaço entre as linhas
+
+    # Segunda linha de informações gerais
+    table2 = doc.add_table(rows=1, cols=4)
+    table2.style = 'Table Grid' # You can choose a different style or remove it
+    cells2 = table2.rows[0].cells
+    cells2[0].text = f"Requested by: {general_data['Requested by']}"
+    cells2[1].text = f"Performed by: {general_data['Performed by']}"
+    cells2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
+    cells2[3].text = f"Approved by: {general_data['Approved by']}"
+    # Remover bordas da tabela 2 (optional)
+    for row in table2.rows:
+        for cell in row.cells:
+            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+
+    doc.add_paragraph() # Espaço antes da próxima seção
 
     doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
@@ -85,10 +109,10 @@ def generate_word_report(general_data, images, sample_data):
 
     # Adicionar a tabela com os detalhes das amostras
     doc.add_paragraph("\nDetalhes das Amostras:")
-    table = doc.add_table(rows=len(sample_data), cols=2)
+    table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
-        cell_left = table.cell(i, 0)
-        cell_right = table.cell(i, 1)
+        cell_left = table_samples.cell(i, 0)
+        cell_right = table_samples.cell(i, 1)
         cell_left.text = f"{key}:"
         cell_left.paragraphs[0].runs[0].font.bold = True
         cell_right.text = value
