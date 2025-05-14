@@ -4,6 +4,7 @@ from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
+import docx  # Importamos a biblioteca docx explicitamente
 
 OUTPUT_FILENAME = 'relatorio_completo.docx'
 
