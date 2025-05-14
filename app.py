@@ -1,8 +1,10 @@
 import streamlit as st
 from docx import Document
 from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
+import docx  # Importamos a biblioteca docx explicitamente
 
 OUTPUT_FILENAME = 'relatorio_completo.docx'
 
@@ -51,17 +53,30 @@ for question in questions:
 def generate_word_report(general_data, images, sample_data):
     doc = Document()
 
-    doc.add_paragraph("Informações Gerais:")
-    doc.add_paragraph(f"**Product:** {general_data['Product']}")
-    doc.add_paragraph(f"**Project:** {general_data['Project']}")
-    doc.add_paragraph(f"**Lot:** {general_data['Lot']}")
-    doc.add_paragraph(f"**Released:** {general_data['Released']}")
-    doc.add_paragraph()
-    doc.add_paragraph(f"**Requested by:** {general_data['Requested by']}")
-    doc.add_paragraph(f"**Performed by:** {general_data['Performed by']}")
-    doc.add_paragraph(f"**Reviewed by:** {general_data['Reviewed by']}")
-    doc.add_paragraph(f"**Approved by:** {general_data['Approved by']}")
-    doc.add_paragraph()
+    # Informações Gerais em duas linhas (como no site)
+    table_row1 = doc.add_table(rows=1, cols=4)
+    cells_row1 = table_row1.rows[0].cells
+    cells_row1[0].text = f"Product: {general_data['Product']}"
+    cells_row1[1].text = f"Project: {general_data['Project']}"
+    cells_row1[2].text = f"Lot: {general_data['Lot']}"
+    cells_row1[3].text = f"Released: {general_data['Released']}"
+    # Remover bordas da tabela 1
+    for row in table_row1.rows:
+        for cell in row.cells:
+            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+
+    table_row2 = doc.add_table(rows=1, cols=4)
+    cells_row2 = table_row2.rows[0].cells
+    cells_row2[0].text = f"Requested by: {general_data['Requested by']}"
+    cells_row2[1].text = f"Performed by: {general_data['Performed by']}"
+    cells_row2[2].text = f"Reviewed by: {general_data['Reviewed by']}"
+    cells_row2[3].text = f"Approved by: {general_data['Approved by']}"
+    # Remover bordas da tabela 2
+    for row in table_row2.rows:
+        for cell in row.cells:
+            cell._tc.get_or_add_tcPr().append(docx.oxml.parse_xml(r'<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>'))
+
+    doc.add_paragraph() # Espaço antes da próxima seção
 
     doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
@@ -85,10 +100,10 @@ def generate_word_report(general_data, images, sample_data):
 
     # Adicionar a tabela com os detalhes das amostras
     doc.add_paragraph("\nDetalhes das Amostras:")
-    table = doc.add_table(rows=len(sample_data), cols=2)
+    table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
-        cell_left = table.cell(i, 0)
-        cell_right = table.cell(i, 1)
+        cell_left = table_samples.cell(i, 0)
+        cell_right = table_samples.cell(i, 1)
         cell_left.text = f"{key}:"
         cell_left.paragraphs[0].runs[0].font.bold = True
         cell_right.text = value
