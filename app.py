@@ -119,7 +119,7 @@ col_label2.markdown("**Picture 4 mm**")
 
 def generate_word_report(report_num, general_data, images_data, sample_data, sieve_data, perf_2mm, perf_4mm, sieve_photos):
     doc = Document()
-    print(f"Número de linhas de input: {len(row_labels_sieve_input)}") # DEBUG
+
     # Definir as margens
     sections = doc.sections
     for section in sections:
@@ -218,30 +218,42 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     # Adicionar as imagens em tabela 3x4 com tamanho fixo
     image_table = doc.add_table(rows=3, cols=4)
     images = [img for img in images_data if img is not None]
-    for i in range(3):
-        for j in range(4):
-            index = i * 4 + j
-            cell = image_table.cell(i, j)
-            if index < len(images):
-                try:
-                    cell.paragraphs[0].add_run().add_picture(
-                        images[index],
-                        width=Inches(IMAGE_SIZE_INCHES),
-                        height=Inches(IMAGE_SIZE_INCHES)
-                    )
-                except Exception as e:
-                    cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
-                    for paragraph in cell.paragraphs:
-                        paragraph.style.font.name = 'Arial'
-                        paragraph.style.font.size = Pt(10)
-                        for run in paragraph.runs:
-                            run.font.name = 'Arial'
-                            run.font.size = Pt(10)
-            if index < len(image_labels):
-                cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
-                paragraph = cell.paragraphs[-1]
-                paragraph.style.font.name = 'Arial'
-                paragraph.style.font.size = Pt(8)
+    if images:  # Verifica se há alguma imagem carregada
+        for i in range(3):
+            for j in range(4):
+                index = i * 4 + j
+                cell = image_table.cell(i, j)
+                if index < len(images):
+                    try:
+                        cell.paragraphs[0].add_run().add_picture(
+                            images[index],
+                            width=Inches(IMAGE_SIZE_INCHES),
+                            height=Inches(IMAGE_SIZE_INCHES)
+                        )
+                    except Exception as e:
+                        cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
+                        for paragraph in cell.paragraphs:
+                            paragraph.style.font.name = 'Arial'
+                            paragraph.style.font.size = Pt(10)
+                            for run in paragraph.runs:
+                                run.font.name = 'Arial'
+                                run.font.size = Pt(10)
+                if index < len(image_labels):
+                    cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    paragraph = cell.paragraphs[-1]
+                    paragraph.style.font.name = 'Arial'
+                    paragraph.style.font.size = Pt(8)
+    else:
+        # Se não houver imagens, preenche as células com os rótulos
+        for i in range(3):
+            for j in range(4):
+                index = i * 4 + j
+                cell = image_table.cell(i, j)
+                if index < len(image_labels):
+                    cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    paragraph = cell.paragraphs[-1]
+                    paragraph.style.font.name = 'Arial'
+                    paragraph.style.font.size = Pt(8)
 
     doc.add_paragraph("\n6. DETALHES DAS AMOSTRAS:")
     paragraph = doc.paragraphs[-1]
@@ -298,6 +310,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
             for paragraph in cell.paragraphs:
+                paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(10)
 
     # Linhas de performance
