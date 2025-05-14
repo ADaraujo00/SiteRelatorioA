@@ -9,8 +9,11 @@ import docx  # Importamos a biblioteca docx explicitamente
 OUTPUT_FILENAME = 'relatorio_completo.docx'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
+HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome na mesma pasta do script
 
 st.title("Gerador de Relatório Completo")
+
+report_number = st.text_input("Número do Relatório:", "TR00001")
 
 st.subheader("Informações Gerais:")
 
@@ -52,8 +55,20 @@ for question in questions:
     col_q.markdown(f"**{question}:**")
     sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
 
-def generate_word_report(general_data, images, sample_data):
+def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
+
+    # Adicionar a imagem de cabeçalho
+    try:
+        doc.add_picture(HEADER_IMAGE_PATH, width=Inches(6)) # Ajuste a largura conforme necessário
+        header_paragraph = doc.paragraphs[-1]
+        header_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    except Exception as e:
+        doc.add_paragraph(f"Erro ao adicionar imagem de cabeçalho: {e}")
+
+    # Adicionar o número do relatório
+    doc.add_paragraph(f"Relatório No: {report_num}")
+    doc.add_paragraph() # Espaço
 
     def remove_table_borders(table):
         tblPr = table._element.xpath('./w:tblPr')[0]
@@ -138,7 +153,7 @@ if st.button("Gerar Relatório"):
         "Reviewed by": reviewed_by,
         "Approved by": approved_by
     }
-    word_buffer = generate_word_report(general_info, uploaded_files, sample_details_input)
+    word_buffer = generate_word_report(report_number, general_info, uploaded_files, sample_details_input)
     if word_buffer:
         st.download_button(
             label="Baixar Relatório Word",
@@ -150,8 +165,9 @@ if st.button("Gerar Relatório"):
 st.markdown("""
 ---
 **Instruções:**
-1. Preencha as informações gerais.
-2. Carregue as imagens correspondentes a cada descrição.
-3. Preencha os detalhes das amostras.
-4. Clique em "Gerar Relatório" para baixar o documento Word.
+1. Insira o número do relatório.
+2. Preencha as informações gerais.
+3. Carregue as imagens correspondentes a cada descrição.
+4. Preencha os detalhes das amostras.
+5. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
