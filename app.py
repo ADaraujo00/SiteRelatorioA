@@ -5,12 +5,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
-import pypandoc
-import tempfile
-import os
 
-OUTPUT_FILENAME_DOCX = 'relatorio_completo.docx'
-OUTPUT_FILENAME_PDF = 'relatorio_completo.pdf'
+OUTPUT_FILENAME = 'relatorio_completo.docx'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
 # Salve a imagem com este nome na mesma pasta do script
@@ -179,32 +175,9 @@ if st.button("Gerar Relatório"):
         st.download_button(
             label="Baixar Relatório Word",
             data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME_DOCX,
+            file_name=OUTPUT_FILENAME,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        # Converter para PDF usando pypandoc
-        try:
-            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_docx_file:
-                tmp_docx_file.write(word_buffer.getvalue())
-                docx_path = tmp_docx_file.name
-
-            pdf_path = OUTPUT_FILENAME_PDF
-            pypandoc.convert_file(docx_path, 'pdf', outputfile=pdf_path)
-
-            with open(pdf_path, "rb") as pdf_file:
-                st.download_button(
-                    label="Baixar Relatório PDF",
-                    data=pdf_file.read(),
-                    file_name=OUTPUT_FILENAME_PDF,
-                    mime="application/pdf"
-                )
-
-            os.remove(docx_path)
-            if os.path.exists(pdf_path):
-                os.remove(pdf_path)
-
-        except Exception as e:
-            st.error(f"Erro ao converter para PDF: {e}")
 
 st.markdown("""
 ---
@@ -213,5 +186,5 @@ st.markdown("""
 2. Preencha as **Informações Gerais**.
 3. Carregue as imagens correspondentes a cada descrição.
 4. Preencha os **Detalhes das Amostras**.
-5. Clique em "Gerar Relatório" para baixar o documento Word e/ou PDF.
+5. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
