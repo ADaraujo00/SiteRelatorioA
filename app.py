@@ -292,7 +292,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
-            key = f"{row_label.replace(' ','_')}_{col_labels_sieve[j].lower()}"
+            key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
             value = sieve_data.get(key, "")
             cell = sieve_table.cell(i + 1, j)
             cell.text = str(value)
@@ -300,7 +300,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
                 paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(10)
 
-# Linhas de performance
+    # Linhas de performance
     cell_perf_2mm_label = sieve_table.cell(len(row_labels_sieve_input) + 1, 0)
     cell_perf_2mm_label.text = "Performance 2 mm"
     for paragraph in cell_perf_2mm_label.paragraphs:
@@ -332,6 +332,7 @@ def generate_word_report(report_num, general_data, images, sample_data, sieve_da
             paragraph.style.font.size = Pt(10)
 
     remove_table_borders(sieve_table)
+    doc.add_paragraph()
 
     # Adicionar fotos da peneira
     doc.add_paragraph("\n8. FOTOS DA PENEIRA:")
