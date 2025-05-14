@@ -5,13 +5,12 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
-from docx2pdf import convert
 
-OUTPUT_FILENAME_DOCX = 'relatorio_completo.docx'
-OUTPUT_FILENAME_PDF = 'relatorio_completo.pdf'
+OUTPUT_FILENAME = 'relatorio_completo.docx'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
-HEADER_IMAGE_PATH = 'electrolux_header.png' # Salve a imagem com este nome
+# Salve a imagem com este nome na mesma pasta do script
+HEADER_IMAGE_PATH = 'electrolux_header.png'
 
 st.title("Gerador de Relatório Completo")
 
@@ -20,16 +19,16 @@ report_number = st.text_input("Número do Relatório:", "TR00001")
 st.subheader("Informações Gerais:")
 
 col1, col2, col3, col4 = st.columns(4)
-product_general = col1.text_input("Product:")
-project = col2.text_input("Project:")
-lot = col3.text_input("Lot:")
-released = col4.text_input("Released:")
+product_general = col1.text_input("**Product:**")
+project = col2.text_input("**Project:**")
+lot = col3.text_input("**Lot:**")
+released = col4.text_input("**Released:**")
 
 col5, col6, col7, col8 = st.columns(4)
-requested_by = col5.text_input("Requested by:")
-performed_by = col6.text_input("Performed by:")
-reviewed_by = col7.text_input("Reviewed by:")
-approved_by = col8.text_input("Approved by:")
+requested_by = col5.text_input("**Requested by:**")
+performed_by = col6.text_input("**Performed by:**")
+reviewed_by = col7.text_input("**Reviewed by:**")
+approved_by = col8.text_input("**Approved by:**")
 
 st.subheader("3. SAMPLES DESCRIPTION:")
 
@@ -45,23 +44,28 @@ cols_grid = [st.columns(4) for _ in range(3)]
 for i in range(3):
     for j in range(4):
         index = i * 4 + j
-        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=["jpg", "jpeg", "png"], key=f"image_{index}")
+        uploader = cols_grid[i][j].file_uploader(f"{image_labels[index]}:", type=[
+                                                                            "jpg", "jpeg", "png"], key=f"image_{index}")
         image_uploaders.append(uploader)
 
 st.subheader("Detalhes das Amostras:")
 sample_details_input = {}
-questions = ["Product", "Accessories", "Model", "Voltage", "Dimensions", "Supplier", "Quantity", "Volume"]
+questions = ["Product", "Accessories", "Model", "Voltage",
+             "Dimensions", "Supplier", "Quantity", "Volume"]
 
 for question in questions:
     col_q, col_a = st.columns([1, 2])
     col_q.markdown(f"**{question}:**")
-    sample_details_input[question] = col_a.text_input("", label_visibility="collapsed", key=question)
+    sample_details_input[question] = col_a.text_input(
+        "", label_visibility="collapsed", key=question)
+
 
 def generate_word_report(report_num, general_data, images, sample_data):
     doc = Document()
 
     # Adicionar a imagem de cabeçalho
     try:
+        # Ajuste a largura conforme necessário
         doc.add_picture(HEADER_IMAGE_PATH, width=Inches(6))
         header_paragraph = doc.paragraphs[-1]
         header_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -70,7 +74,7 @@ def generate_word_report(report_num, general_data, images, sample_data):
 
     # Adicionar o número do relatório
     doc.add_paragraph(f"Relatório No: {report_num}")
-    doc.add_paragraph() # Espaço
+    doc.add_paragraph()  # Espaço
 
     def remove_table_borders(table):
         tblPr = table._element.xpath('./w:tblPr')[0]
@@ -81,17 +85,17 @@ def generate_word_report(report_num, general_data, images, sample_data):
             borders.append(border)
         tblPr.append(borders)
 
-    # Informações Gerais em tabela com respostas abaixo (rótulos em negrito)
+    # Informações Gerais em tabela com respostas abaixo
     table_row1 = doc.add_table(rows=2, cols=4)
     cells_row1 = table_row1.rows[0].cells
     cells_row1[0].text = "Product:"
-    cells_row1[0].paragraphs[0].runs[0].font.bold = True
+    cells_row1[0].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[1].text = "Project:"
-    cells_row1[1].paragraphs[0].runs[0].font.bold = True
+    cells_row1[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[2].text = "Lot:"
-    cells_row1[2].paragraphs[0].runs[0].font.bold = True
+    cells_row1[2].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row1[3].text = "Released:"
-    cells_row1[3].paragraphs[0].runs[0].font.bold = True
+    cells_row1[3].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row2 = table_row1.rows[1].cells
     cells_row2[0].text = general_data['Product']
     cells_row2[1].text = general_data['Project']
@@ -102,13 +106,13 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_row2 = doc.add_table(rows=2, cols=4)
     cells_row3 = table_row2.rows[0].cells
     cells_row3[0].text = "Requested by:"
-    cells_row3[0].paragraphs[0].runs[0].font.bold = True
+    cells_row3[0].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[1].text = "Performed by:"
-    cells_row3[1].paragraphs[0].runs[0].font.bold = True
+    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[2].text = "Reviewed by:"
-    cells_row3[2].paragraphs[0].runs[0].font.bold = True
+    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row3[3].text = "Approved by:"
-    cells_row3[3].paragraphs[0].runs[0].font.bold = True
+    cells_row3[1].paragraphs[0].runs[0].font.bold = True  # Negrito no Word
     cells_row4 = table_row2.rows[1].cells
     cells_row4[0].text = general_data['Requested by']
     cells_row4[1].text = general_data['Performed by']
@@ -116,7 +120,7 @@ def generate_word_report(report_num, general_data, images, sample_data):
     cells_row4[3].text = general_data['Approved by']
     remove_table_borders(table_row2)
 
-    doc.add_paragraph() # Espaço antes da próxima seção
+    doc.add_paragraph()  # Espaço antes da próxima seção
 
     doc.add_paragraph("3. SAMPLES DESCRIPTION:")
 
@@ -140,9 +144,10 @@ def generate_word_report(report_num, general_data, images, sample_data):
     table_samples = doc.add_table(rows=len(sample_data), cols=2)
     for i, (key, value) in enumerate(sample_data.items()):
         cell_left = table_samples.cell(i, 0)
+        cell_right = table_samples.cell(i, 1)
         cell_left.text = f"{key}:"
         cell_left.paragraphs[0].runs[0].font.bold = True
-        cell_right.text = sample_data[key]
+        cell_right.text = value
 
     # Salvar o documento na memória
     buffer = BytesIO()
@@ -150,8 +155,10 @@ def generate_word_report(report_num, general_data, images, sample_data):
     buffer.seek(0)
     return buffer
 
+
 if st.button("Gerar Relatório"):
-    uploaded_files = [uploader for uploader in image_uploaders if uploader is not None]
+    uploaded_files = [
+        uploader for uploader in image_uploaders if uploader is not None]
     general_info = {
         "Product": product_general,
         "Project": project,
@@ -162,27 +169,15 @@ if st.button("Gerar Relatório"):
         "Reviewed by": reviewed_by,
         "Approved by": approved_by
     }
-    word_buffer = generate_word_report(report_number, general_info, uploaded_files, sample_details_input)
+    word_buffer = generate_word_report(
+        report_number, general_info, uploaded_files, sample_details_input)
     if word_buffer:
         st.download_button(
             label="Baixar Relatório Word",
             data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME_DOCX,
+            file_name=OUTPUT_FILENAME,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        # Converter para PDF e oferecer download
-        try:
-            pdf_buffer = BytesIO()
-            convert(word_buffer, pdf_buffer)
-            pdf_buffer.seek(0)
-            st.download_button(
-                label="Baixar Relatório PDF",
-                data=pdf_buffer.getvalue(),
-                file_name=OUTPUT_FILENAME_PDF,
-                mime="application/pdf"
-            )
-        except Exception as e:
-            st.error(f"Erro ao converter para PDF: {e}")
 
 st.markdown("""
 ---
@@ -191,5 +186,5 @@ st.markdown("""
 2. Preencha as informações gerais.
 3. Carregue as imagens correspondentes a cada descrição.
 4. Preencha os detalhes das amostras.
-5. Clique em "Gerar Relatório" para baixar o documento Word e/ou PDF.
+5. Clique em "Gerar Relatório" para baixar o documento Word.
 """)
