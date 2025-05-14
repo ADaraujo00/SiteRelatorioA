@@ -5,8 +5,10 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from PIL import Image
 import docx  # Importamos a biblioteca docx explicitamente
+from docx2pdf import convert
 
-OUTPUT_FILENAME = 'relatorio_completo.docx'
+OUTPUT_FILENAME_DOCX = 'relatorio_completo.docx'
+OUTPUT_FILENAME_PDF = 'relatorio_completo.pdf'
 IMAGE_SIZE_CM = 4
 IMAGE_SIZE_INCHES = IMAGE_SIZE_CM / 2.54
 # Salve a imagem com este nome na mesma pasta do script
@@ -14,7 +16,7 @@ HEADER_IMAGE_PATH = 'electrolux_header.png'
 
 st.title("Gerador de Relatório Completo")
 
-report_number = st.text_input("Número do Relatório:", "TR00001")
+report_number = st.text_input("**Número do Relatório:**", "TR00001")
 
 st.subheader("Informações Gerais:")
 
@@ -175,16 +177,29 @@ if st.button("Gerar Relatório"):
         st.download_button(
             label="Baixar Relatório Word",
             data=word_buffer.getvalue(),
-            file_name=OUTPUT_FILENAME,
+            file_name=OUTPUT_FILENAME_DOCX,
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
+        # Converter para PDF e oferecer download
+        try:
+            pdf_buffer = BytesIO()
+            convert(word_buffer, pdf_buffer)
+            pdf_buffer.seek(0)
+            st.download_button(
+                label="Baixar Relatório PDF",
+                data=pdf_buffer.getvalue(),
+                file_name=OUTPUT_FILENAME_PDF,
+                mime="application/pdf"
+            )
+        except Exception as e:
+            st.error(f"Erro ao converter para PDF: {e}")
 
 st.markdown("""
 ---
 **Instruções:**
-1. Insira o número do relatório.
-2. Preencha as informações gerais.
+1. Insira o **Número do Relatório**.
+2. Preencha as **Informações Gerais**.
 3. Carregue as imagens correspondentes a cada descrição.
-4. Preencha os detalhes das amostras.
-5. Clique em "Gerar Relatório" para baixar o documento Word.
+4. Preencha os **Detalhes das Amostras**.
+5. Clique em "Gerar Relatório" para baixar o documento Word e/ou PDF.
 """)
