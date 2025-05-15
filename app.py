@@ -225,8 +225,9 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 cell = image_table.cell(i, j)
                 if index < len(images):
                     try:
+                        image_stream = BytesIO(images[index])
                         cell.paragraphs[0].add_run().add_picture(
-                            images[index],
+                            image_stream,
                             width=Inches(IMAGE_SIZE_INCHES),
                             height=Inches(IMAGE_SIZE_INCHES)
                         )
@@ -301,7 +302,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
         cell = sieve_table.cell(i + 1, 0)
         cell.text = row_label
         for paragraph in cell.paragraphs:
-            paragraph.style.font.name ='Arial'
+            paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
@@ -360,8 +361,9 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     if sieve_photos.get("photo_2mm"):
         cell_2mm = sieve_photo_table.cell(0, 0)
         try:
+            image_stream_2mm = BytesIO(sieve_photos["photo_2mm"])
             cell_2mm.paragraphs[0].add_run().add_picture(
-                sieve_photos["photo_2mm"],
+                image_stream_2mm,
                 width=Inches(3),
                 height=Inches(3)
             )
@@ -378,8 +380,9 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     if sieve_photos.get("photo_4mm"):
         cell_4mm = sieve_photo_table.cell(0, 1)
         try:
+            image_stream_4mm = BytesIO(sieve_photos["photo_4mm"])
             cell_4mm.paragraphs[0].add_run().add_picture(
-                sieve_photos["photo_4mm"],
+                image_stream_4mm,
                 width=Inches(3),
                 height=Inches(3)
             )
