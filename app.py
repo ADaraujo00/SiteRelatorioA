@@ -303,7 +303,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(10)
 
-    # Linhas de performance
+    # Linha de performance 2 mm
     perf_2mm_row_index = len(row_labels_sieve_input) + 1
     cell_perf_2mm_label = sieve_table.cell(perf_2mm_row_index, 0)
     cell_perf_2mm_label.text = "Performance 2 mm"
@@ -320,7 +320,8 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
 
-    perf_4mm_row_index = len(row_labels_sieve_input) + 1
+    # Linha de performance 4 mm
+    perf_4mm_row_index = len(row_labels_sieve_input) + 2 # Ajustando o índice
     cell_perf_4mm_label = sieve_table.cell(perf_4mm_row_index, 0)
     cell_perf_4mm_label.text = "Performance 4 mm"
     for paragraph in cell_perf_4mm_label.paragraphs:
