@@ -279,8 +279,9 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     # Criando a tabela com o número correto de linhas
     sieve_table = doc.add_table(rows=1 + len(row_labels_sieve_input) + 2, cols=len(col_labels_sieve))
     # Cabeçalho
+    header_row = sieve_table.rows[0]
     for i, label in enumerate(col_labels_sieve):
-        cell = sieve_table.cell(0, i)
+        cell = header_row.cells[i]
         cell.text = label
         for paragraph in cell.paragraphs:
             paragraph.style.font.name = 'Arial'
@@ -289,24 +290,25 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
 
     # Linhas de input
     for i, row_label in enumerate(row_labels_sieve_input):
-        cell = sieve_table.cell(i + 1, 0)
-        cell.text = row_label
-        for paragraph in cell.paragraphs:
+        data_row = sieve_table.rows[i + 1]
+        cell_label = data_row.cells[0]
+        cell_label.text = row_label
+        for paragraph in cell_label.paragraphs:
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
             paragraph.runs[0].font.bold = True
         for j in range(1, len(col_labels_sieve)):
             key = f"{row_label.replace(' ', '_')}_{col_labels_sieve[j].lower()}"
             value = sieve_data.get(key, "")
-            cell = sieve_table.cell(i + 1, j)
-            cell.text = str(value)
-            for paragraph in cell.paragraphs:
+            cell_value = data_row.cells[j]
+            cell_value.text = str(value)
+            for paragraph in cell_value.paragraphs:
                 paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(10)
 
     # Linha de performance 2 mm
-    perf_2mm_row_index = 1 + len(row_labels_sieve_input)
-    cell_perf_2mm_label = sieve_table.cell(perf_2mm_row_index, 0)
+    perf_2mm_row = sieve_table.rows[1 + len(row_labels_sieve_input)]
+    cell_perf_2mm_label = perf_2mm_row.cells[0]
     cell_perf_2mm_label.text = "Performance 2 mm"
     for paragraph in cell_perf_2mm_label.paragraphs:
         paragraph.style.font.name = 'Arial'
@@ -315,15 +317,15 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     for j in range(1, len(col_labels_sieve)):
         min_med_max = col_labels_sieve[j].lower()
         value = perf_2mm.get(min_med_max, 0)
-        cell_perf_2mm_value = sieve_table.cell(perf_2mm_row_index, j)
+        cell_perf_2mm_value = perf_2mm_row.cells[j]
         cell_perf_2mm_value.text = f"{value:.2%}"
         for paragraph in cell_perf_2mm_value.paragraphs:
             paragraph.style.font.name = 'Arial'
             paragraph.style.font.size = Pt(10)
 
     # Linha de performance 4 mm
-    perf_4mm_row_index = 1 + len(row_labels_sieve_input) + 1
-    cell_perf_4mm_label = sieve_table.cell(perf_4mm_row_index, 0)
+    perf_4mm_row = sieve_table.rows[1 + len(row_labels_sieve_input) + 1]
+    cell_perf_4mm_label = perf_4mm_row.cells[0]
     cell_perf_4mm_label.text = "Performance 4 mm"
     for paragraph in cell_perf_4mm_label.paragraphs:
         paragraph.style.font.name = 'Arial'
@@ -332,7 +334,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     for j in range(1, len(col_labels_sieve)):
         min_med_max = col_labels_sieve[j].lower()
         value = perf_4mm.get(min_med_max, 0)
-        cell_perf_4mm_value = sieve_table.cell(perf_4mm_row_index, j)
+        cell_perf_4mm_value = perf_4mm_row.cells[j]
         cell_perf_4mm_value.text = f"{value:.2%}"
         for paragraph in cell_perf_4mm_value.paragraphs:
             paragraph.style.font.name = 'Arial'
