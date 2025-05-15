@@ -226,11 +226,14 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 if index < len(images):
                     try:
                         image_stream = BytesIO(images[index])
-                        cell.paragraphs[0].add_run().add_picture(
+                        paragraph = cell.paragraphs[0]
+                        run = paragraph.add_run()
+                        run.add_picture(
                             image_stream,
                             width=Inches(IMAGE_SIZE_INCHES),
                             height=Inches(IMAGE_SIZE_INCHES)
                         )
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     except Exception as e:
                         print(f"Erro ao adicionar imagem {index + 1}: {e}")
                         cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
@@ -240,22 +243,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                             for run in paragraph.runs:
                                 run.font.name = 'Arial'
                                 run.font.size = Pt(10)
-                if index < len(image_labels):
-                    cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    paragraph = cell.paragraphs[-1]
-                    paragraph.style.font.name = 'Arial'
-                    paragraph.style.font.size = Pt(8)
-    else:
-        # Se não houver imagens, preenche as células com os rótulos
-        for i in range(3):
-            for j in range(4):
-                index = i * 4 + j
-                cell = image_table.cell(i, j)
-                if index < len(image_labels):
-                    cell.add_paragraph(image_labels[index]).alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    paragraph = cell.paragraphs[-1]
-                    paragraph.style.font.name = 'Arial'
-                    paragraph.style.font.size = Pt(8)
+    # Removendo a adição dos rótulos abaixo das imagens das amostras
 
     doc.add_paragraph("\n6. DETALHES DAS AMOSTRAS:")
     paragraph = doc.paragraphs[-1]
@@ -353,21 +341,21 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
 
     # Adicionar fotos da peneira
     doc.add_paragraph("\n8. FOTOS DA PENEIRA:")
-    paragraph = doc.paragraphs[-1]
-    paragraph.style.font.name = 'Arial'
-    paragraph.style.font.size = Pt(10)
-    paragraph.runs[0].font.bold = True
+    sieve_photo_table = doc.add_table(rows=1, cols=2) # Mudando para uma linha
+    cells_sieve = sieve_photo_table.rows[0].cells
 
-    sieve_photo_table = doc.add_table(rows=2, cols=2)
     if sieve_photos.get("photo_2mm"):
-        cell_2mm = sieve_photo_table.cell(0, 0)
+        cell_2mm = cells_sieve[0]
         try:
             image_stream_2mm = BytesIO(sieve_photos["photo_2mm"])
-            cell_2mm.paragraphs[0].add_run().add_picture(
+            paragraph_2mm = cell_2mm.paragraphs[0]
+            run_2mm = paragraph_2mm.add_run()
+            run_2mm.add_picture(
                 image_stream_2mm,
                 width=Inches(3),
                 height=Inches(3)
             )
+            paragraph_2mm.alignment = WD_ALIGN_PARAGRAPH.CENTER
             cell_2mm.add_paragraph("Peneira 2 mm").alignment = WD_ALIGN_PARAGRAPH.CENTER
             for paragraph in cell_2mm.paragraphs:
                 paragraph.style.font.name = 'Arial'
@@ -380,14 +368,17 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.size = Pt(10)
 
     if sieve_photos.get("photo_4mm"):
-        cell_4mm = sieve_photo_table.cell(0, 1)
+        cell_4mm = cells_sieve[1]
         try:
             image_stream_4mm = BytesIO(sieve_photos["photo_4mm"])
-            cell_4mm.paragraphs[0].add_run().add_picture(
+            paragraph_4mm = cell_4mm.paragraphs[0]
+            run_4mm = paragraph_4mm.add_run()
+            run_4mm.add_picture(
                 image_stream_4mm,
                 width=Inches(3),
                 height=Inches(3)
             )
+            paragraph_4mm.alignment = WD_ALIGN_PARAGRAPH.CENTER
             cell_4mm.add_paragraph("Peneira 4 mm").alignment = WD_ALIGN_PARAGRAPH.CENTER
             for paragraph in cell_4mm.paragraphs:
                 paragraph.style.font.name = 'Arial'
