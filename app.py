@@ -276,7 +276,8 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     paragraph.style.font.name = 'Arial'
     paragraph.style.font.size = Pt(10)
     paragraph.runs[0].font.bold = True
-    sieve_table = doc.add_table(rows=len(row_labels_sieve_input) + 2, cols=len(col_labels_sieve))
+    # Criando a tabela com o número correto de linhas
+    sieve_table = doc.add_table(rows=1 + len(row_labels_sieve_input) + 2, cols=len(col_labels_sieve))
     # Cabeçalho
     for i, label in enumerate(col_labels_sieve):
         cell = sieve_table.cell(0, i)
@@ -304,7 +305,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.size = Pt(10)
 
     # Linha de performance 2 mm
-    perf_2mm_row_index = len(row_labels_sieve_input) + 1
+    perf_2mm_row_index = 1 + len(row_labels_sieve_input)
     cell_perf_2mm_label = sieve_table.cell(perf_2mm_row_index, 0)
     cell_perf_2mm_label.text = "Performance 2 mm"
     for paragraph in cell_perf_2mm_label.paragraphs:
@@ -321,7 +322,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
             paragraph.style.font.size = Pt(10)
 
     # Linha de performance 4 mm
-    perf_4mm_row_index = len(row_labels_sieve_input) + 2 # Ajustando o índice
+    perf_4mm_row_index = 1 + len(row_labels_sieve_input) + 1
     cell_perf_4mm_label = sieve_table.cell(perf_4mm_row_index, 0)
     cell_perf_4mm_label.text = "Performance 4 mm"
     for paragraph in cell_perf_4mm_label.paragraphs:
@@ -396,7 +397,6 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
 
 if st.button("Gerar Relatório"):
     uploaded_files = [uploader for uploader in image_uploaders if uploader is not None]
