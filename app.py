@@ -232,6 +232,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                             height=Inches(IMAGE_SIZE_INCHES)
                         )
                     except Exception as e:
+                        print(f"Erro ao adicionar imagem {index + 1}: {e}")
                         cell.text = f"Erro ao adicionar imagem {index + 1}: {e}"
                         for paragraph in cell.paragraphs:
                             paragraph.style.font.name = 'Arial'
@@ -372,6 +373,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(8)
         except Exception as e:
+            print(f"Erro ao adicionar foto 2mm: {e}")
             cell_2mm.text = f"Erro ao adicionar foto 2mm: {e}"
             for paragraph in cell_2mm.paragraphs:
                 paragraph.style.font.name = 'Arial'
@@ -391,6 +393,7 @@ def generate_word_report(report_num, general_data, images_data, sample_data, sie
                 paragraph.style.font.name = 'Arial'
                 paragraph.style.font.size = Pt(8)
         except Exception as e:
+            print(f"Erro ao adicionar foto 4mm: {e}")
             cell_4mm.text = f"Erro ao adicionar foto 4mm: {e}"
             for paragraph in cell_4mm.paragraphs:
                 paragraph.style.font.name = 'Arial'
